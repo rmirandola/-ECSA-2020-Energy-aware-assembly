@@ -1,0 +1,270 @@
+%\section{Load-dependent energy model}
+%\label{sec:energymod}
+%\vincenzo{nota: in sez.  \ref{sec:comp-energy} e \ref{sec:comm-energy} non e' definito quale e' il valore degli indici energetici se $S$ non e' fully resolved; bisogna definirlo? (in analogia a $S.Q$) }
+
+%\vincenzo{quale e' l'unita' di misura degli indici di consumo energetico che definiamo? se e' ''energia'', gli indici che che definiamo dovrebbero rappresentare energia consumata (in media) per ogni singola invocazione di un servizio (cosi' come le misure di QoS (tempo di risposta, reliability, ...) le abbiamo definite come QoS sperimentata in una singola invocazione. E' una cosa che va definita bene, e va verificato se nelle varie formule che scriviamo viene espressa correttamente}
+
+In this section we introduce the model we adopt to estimate the energy consumption of each service, as a function of the bindings it establishes with other services to resolve its dependencies. As we are considering only computing and communication resources as the "physical"resources supporting the service operations, the model  consists of two parts: a \textit{computation?computing? energy} model 
+%$S.E^{comp}$  
+and a \textit{communication energy} model
+%$S.E^{comm}$ 
+that describe, respectively, the energy consumption caused by the computing and communication activities triggered by a service $S$ 
+%when it is subject to a flow of requests $\mathbf{\Lambda}_S$
+to fulfill each request it receives.
+ 
+%\vincenzo{ come gestire i "source service" che non hanno un flusso di richieste, ma sono solo generatori di richieste ....; e' un problema? si puo' ignorare?}
+
+\subsection{Computation energy}
+\label{sec:comp-energy}
+
+%\vincenzo{qualche commento sulla modellazione dei consumi energetici (per ora mi limito a un solo tipo di servizio, di tipo "compute", indichero' il suo tipo come : $comp$): mi sembra che il nostro modello di carico/consumo consenta gia' di tenere conto del fatto che servizi diversi possono  indirizzare a un servizio di tipo $comp$ richieste che hanno pesi diversi, a seconda di quanto "compute intensive" sia il servizio; piccolo esempio: prendiamo un servizio $C$, e due servizi  $S_1$ e $S_2$;   $C.Type=comp$, $S_1.Type=t1$, $S_2.Type=t2$; $S_1.Deps=\{t2,comp\}$, $S_2.Deps=\{comp\}$. Quindi $S_1$ richiede un servizio $comp$ per eseguire le sue operazioni "interne" e un servizio di tipo $t2$ per altre operazioni; invece $S_2$ richiede solo un servizio $comp$. Le "transfer function" potrebbero essere definite cosi': $\theta_{S_1,comp}(\lambda)= 10\lambda$,  $\theta_{S_1,t2}(\lambda)= 2\lambda$, $\theta_{S_2,comp}(\lambda)= 1000\lambda$. Quindi, $S_1$ e' un servizio "light", che a ogni attivazione chiede solo 10 "unita' di lavoro" a $comp$, oltre a due invocazioni a un servizio di tipo $t2$, $S_2$ e' un servizio "heavy", che a ogni attivazione chiede  1000 "unita' di lavoro" a $comp$. Se $S_2$ viene usato per risolvere la dipendenza di $S_1$, e entrambi usano $C$ per risolvere la dipendenza $comp$, allora il carico totale che arrivera' a $C$ per ogni invocazione di $S_1$ sara': $\lambda^{tot}_C=10+2*1000$ che mi sembra essere quello che ci aspetteremmo debba succedere. Di conseguenza, direi che il \emph{consumo energetico totale} causato da un assembly debba essere calcolato come somma dei consumi dei soli servizi nel set \textbf{B}, cioe' dei nodi su cui e' fatto il deployment dei servizi, il che, pensandoci, e' anche abbastanza logico. Se invece vogliamo sapere quanto un singolo servizio $S$ contribuisce al consumo totale, possiamo usare il suo consumo energetico definito dall'espressione per $E^{comp}_t(S)$; a patto pero', che i $\lambda^{tot}_{S'}$ che si prendono in considerazione siano solo quelli che hanno la loro radice in $S$}
+
+Let us consider a service $S\in \mathbf{S}\setminus\mathbf{B}$.  
+We recall that  $S$ represents in this case a "virtual" (software implemented) resource that  generates (depending on its input flow) flows of requests to all services in $S.Prov$ used to resolve its dependencies.
+When the flows of requests addressed to services in $S.Prov$ eventually reach a service  of type $comp$, then they will cause some computation energy consumption. This will happen in one step for the dependency of type $comp$ of $S$ ("internal operations" of $S$). Otherwise, the flow of requests will go through a number of virtual services 
+%(i.e. services $\notin \mathbf{B}$) 
+before reaching a service 
+%$\in \mathbf{B}$.
+of type $comp$. 
+To model this process, we introduce the following three indexes $S.I^{comp}$, $S.L^{comp}$ and $S.E^{comp}$ that model, respectively, the \textit{individual}, \textit{node level} and \textit{system level} computation energy consumption associated with?caused by?  a single request addressed to $S$. They are defined as follows:
+
+\begin{footnotesize}
+\begin{equation}
+S.I^{comp}=h_{node(S)}(\mu_{S,comp})
+\label{eq:ind-comp-profile}
+\end{equation}
+\end{footnotesize}
+
+\begin{footnotesize}
+\begin{equation}
+S.L^{comp}= h_{node(S)}(\mu_{S,comp}) 
++ \sum_{\substack{S'\in S.Prov,\\s.t. \sstype{S'}\neq comp\\ \land node(S')=node(S)}} \mu_{S,\sstype{S'}}\cdot S'.L^{comp}
+\label{eq:loc-comp-profile}
+\end{equation}
+\end{footnotesize}
+
+\begin{footnotesize}
+\begin{equation}
+%H_S(\mathbf{\Lambda}_S,  \Theta_S, S.Prov) 
+S.E^{comp} 
+= h_{node(S)}(\mu_{S,comp}) + \sum_{\substack{S'\in S.Prov,\\s.t.\sstype{S'}\neq comp}}\mu_{S,\sstype{S'}}\cdot S'.E^{comp}
+\label{eq:comp-profile}
+\end{equation}
+\end{footnotesize}
+
+\noindent
+where $h_n(\mu)$ represents  the energy consumption of the $comp$ service hosted by a node $n$ for the execution of $\mu$ operations.\vincenzo{dire che stiamo convenzionalmente assumendo una "operazione media" come unita' di computazione?}.  As an example, $h_n(\mu)$ could be instantiated as follows:
+
+\begin{footnotesize}
+\begin{equation}
+h_n(\mu)=a_S + e_S\cdot \mu
+\label{eq:h-function}
+\end{equation}
+\end{footnotesize}
+
+\noindent
+where we adopt a linear computation energy  that consists of a \emph{fixed} part $a_S$, and a \emph{dynamic} part $e_S\cdot \mu$  linearly depending on the  load addressed to the service  of type $comp$. 
+\vincenzo{aggiungere dettagli? tipo che $a_S$ modella il consumo causato dal semplice fatto che $S$ e' switched on, mentre $e_S$ e' il consumo di una "unita' di computazione"; e $\mu$ quindi rappresenta il numero di ''unita' di computazione'' da eseguire}
+
+From the definitions given above, we see that $S.I^{comp}$ models only the energy consumption directly consumed by $S$ for its internal operations. Besides the directly consumed energy, $S.L^{comp}$ includes also the computation energy  indirectly consumed by $S$ because of its use of services  $S'\in S.Prov$, but limited to services co-located with $S$ on the same node (their energy consumption is multiplied by the average number of times $S$ uses $S'$, given by $\mu_{S,\sstype{S'}}$). Finally,  $S.E^{comp}$ adopts a system-wide perspective and models the overall computation energy  consumption caused by $S$ on any node in the system.
+
+We point out that  $S.I^{comp}$, $S.L^{comp}$ and $S.E^{comp}$ refer to  computing?computation? energy consumption originated from?caused by? a single request addressed to $S$. To get measures of the energy consumption per unit time (energy consumption rate), we introduce the concept of \textit{load vector}
+$\mathbf{\Lambda}_S=[\lambda_S(n)]_{n\in\mathbf{N}}$ associated with any service $S\in \mathbf{S}$,  where each vector entry  $\lambda_S(n)$ denotes a  flow of requests (expressed as requests per unit time) addressed to service $S$ by services hosted by node $n\in\mathbf{N}$. $\mathbf{\Lambda}_S$ can be easily estimated by some local monitoring activity.
+Given a load vector $\Lambda_S$, we can derive from  $S.I^{comp}$, $S.L^{comp}$ and $S.E^{comp}$ corresponding measures of the computing energy consumption rate \vincenzo{giusto?}:
+
+\begin{footnotesize}
+\begin{equation}
+S.\rho_X^{comp} =  \big(\sum_{n\in\mathbf{N}} \lambda_S(n)\big) \cdot S.X^{comp}
+\label{eq:comp-rate}
+\end{equation}
+\end{footnotesize}
+
+\noindent
+where $X$ stands for any of: $I$, $L$, $E$.
+
+\subsection{Communication Energy}
+\label{sec:comm-energy}
+
+Let us consider a service  $S\in\mathbf{S}\setminus\mathbf{B}$. As already stated in the previous subsection, $S$ represents a "virtual" (software implemented) resource: the communication energy consumption caused by $S$  depends on the interactions that $S$ has both with services that use it to resolve their dependencies (services in the set $S.Req$) and services used by $S$ itself to resolve its dependencies (services in the set $S.Prov$). Actually, it corresponds to the energy consumed by the communication services hosted by the system nodes to support?implement? the interactions directly of indirectly triggered by $S$, when they involve services hosted by different nodes.
+In this respect, we assume that the  energy spent by a communication service of a node $n$ for these interactions depends  
+both on their volume, and 
+the latency and bandwidth of the links connecting it with  other nodes.\vincenzo{mettere rif?} 
+
+To model this process, we introduce the following three indexes $S.I_n^{comm}$, $S.L_n^{comm}$ and $S.E_n^{comm}$ that model, respectively, the \textit{individual}, \textit{node level} and \textit{system level} communication energy consumption associated with?caused by?  a single request addressed to $S$ by some other service hosted by a node $n\in\mathbf{N}$. They are defined as follows:
+
+\begin{footnotesize}
+\begin{multline}
+S.I_n^{comm} = 
+ \phi_{node(S)}^{req}(\delta_S^{rcv},bw(n, node(S),lt(n,node(S))) \\
+  + \sum_{\substack{S'\in S.Prov,\\s.t. node(S)\neq node(S')}} \mu_{S,\sstype{S'}} \cdot \phi_{node(S)}^{prov}(\delta_{S,\sstype{S'}}^{snd}, bw(node(S),node(S')), lt(node(S),node(S')) 
+\label{eq:ind-comm-profile}
+\end{multline}
+\end{footnotesize}
+
+\begin{footnotesize}
+\begin{equation}
+S.L_n^{comm} = S.I_n^{comm}
+ + \sum_{\substack{S'\in S.Prov,\\s.t. node(S') = node(S)}} \mu_{S,\sstype{S'}}\cdot S'.L_{node(S)}^{comm}
+\label{eq:loc-comm-profile}
+\end{equation}
+\end{footnotesize}
+
+%\begin{footnotesize}
+%\begin{multline}
+%   S.E_n^{comm} =
+%  \phi_{node(S)}^{req}(\delta_S^{rcv},bw(n, node(S),lt(n,node(S))) \\
+%  + \sum_{\substack{S'\in S.Prov,\\s.t. node(S)\neq node(S')}} \mu_{S,\sstype{S'}} \cdot \phi_{node(S)}^{prov}(\delta_{S,\sstype{S'}}^{snd},bw(node(S),node(S')), lt(node(S),node(S'))) \\
+%   + \sum_{S'\in S.Prov} \mu_{S,\sstype{S'}}\cdot S'.E_{node(S)}^{comm} 
+%\label{eq:comm-profile}
+%\end{multline}
+%\end{footnotesize}
+\begin{footnotesize}
+\begin{equation}
+S.E_n^{comm} = S.I_n^{comm}
+ + \sum_{S'\in S.Prov} \mu_{S,\sstype{S'}}\cdot S'.E_{node(S)}^{comm}
+\label{eq:comm-profile}
+\end{equation}
+\end{footnotesize}
+
+\noindent 
+where:
+
+\begin{itemize}
+\item $bw(n_1,n_2)$ and $lt(n_1,n_2)$, with $n_1,n_2\in\mathbf{N}$, denote, respectively, the bandwidth and latency of the link connecting nodes $n_1$ and $n_2$;
+\item $\delta_S^{rcv}$ and $\delta_{S,d}^{snd}$ denote, respectively, the average amount of data  $S$ receives for each service request addressed to it, and the average amount of data  $S$ sends for each invocation of its dependency $d$, to fulfill that request;
+\item $\phi_n^{req}(\delta,b,l)$  denotes the energy consumed  by $commserv(n)$, $n\in\mathbf{N}$, when it receives an amount $\delta$ of data  \vincenzo{expressed as "communication units"?} addressed to a service hosted by $n$ over a link with  bandwidth $b$ and latency $l$; 
+\item $\phi_n^{prov}(\delta,b,l)$ denote the energy consumed  by $commserv(n)$, $n\in\mathbf{N}$, when it sends an amount $\delta$ of data \vincenzo{expressed as "communication units" ?} to a service hosted by another node over a link with  bandwidth $b$ and latency $l$; 
+\vincenzo{dire che diamo piu' avanti (dove?) dettagli su possibili modi di definire  le $\phi$? } 
+\end{itemize}
+
+The first term in the r.h.s. of equation (\ref{eq:ind-comm-profile}) represents the energy consumed by $commserv(node(S))$ for the reception of the service  request  addressed to $S$, coming from an external node $n$. The second term in the r.h.s. of equation (\ref{eq:ind-comm-profile}) represents the energy consumed by $commserv(node(S))$ to send the requests $S$ addresses to services solving its dependencies (i.e., services in $S.Prov$) and hosted by different nodes. Hence, $S.I_n^{comm}$ models the communication energy consumption of $commserv(node(S))$ caused only by the direct interactions $S$ has with other services hosted by different nodes.
+
+On the other hand, $S.L_n^{comm}$ in equation (\ref{eq:loc-comm-profile}) adds to the energy consumption measured by $S.I_n^{comm}$ also the communication energy consumption  indirectly caused by $S$, corresponding to interactions that services in $S.Prov$ have with other services to carry out their own task. As it can be seen from the r.h.s. of  equation (\ref{eq:loc-comm-profile}), $S.L_n^{comm}$ limits its scope to the energy consumption of $commserv(node(S))$ only.
+
+Finally, $S.E_n^{comm}$ in equation (\ref{eq:local-selection}) adopts a system-wide perspective, measuring the communication energy consumption directly or indirectly caused by $S$ on any node in the system, when $S$ receives a single from a service hosted by a node $n$.
+
+\vincenzo{ questo modello  consente di distinguere tra flussi in ingresso (che vengono da $S.Req$) e in uscita (diretti verso $S.Prov$), con conseguenti possibili diversi costi energetici (definendo opportunamente le due $\phi$; pero' non tiene conto del fatto che (in scenari client-server) messaggi in ingresso comportano anche messaggi in uscita, e viceversa; per tenerne conto, bisognerebbe complicare un po' la notazione, da vedere se ne vale la pena; oppure immaginare che questi aspetti siano incorporati nelle $\phi$?}
+
+
+Analogously to the computing energy case,  we can derive from $S.E_n^{comm}$, $S.I_n^{comm}$ and $S.L_n^{comm}$  measures of the communication energy consumption rate, given a load vector $\Lambda_S$:
+
+
+\begin{footnotesize}
+\begin{equation}
+S.\rho_X^{comm} =  \sum_{n\in\mathbf{N}} \lambda_S(n)\cdot S.X_n^{comm}
+\label{eq:comm-rate}
+\end{equation}
+\end{footnotesize}
+
+\noindent
+where $X$ stands for any of: $E$, $I$, $L$.
+
+
+
+
+
+\section{Social Welfare Indexes}
+%\subsection{Social Welfare Indexes}
+\label{sec:welfareIndex}
+
+\vincenzo{se eliminiamo la sez di QoS, c'e' da capire come si introducono gli indici globali di QoS}
+
+In this section we formally define the indexes, based on the model defined in the previous sections, that we will use to measure the effectiveness of our approach with respect to its ability in achieving a good local and social welfare. In particular, with regard to the latter, we adopt a two-fold perspective. On the one side, we measure the average global system "quality" (with respect to  both QoS and energy consumption) achieved thanks to the contribution of all services. On the other side, we measure whether there is an unbalanced distribution among services of this global quality. The adopted measures are defined as follows. 
+
+
+%%%%%%%%%%% INIZIO PEZZO IN GRIGIO %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\vincenzo{il pezzo in grigio che segue l'ho rimosso dalla sez "computing energy model", da verificare se serve e dove eventualmente collocarlo}
+%\begin{shaded}
+%The total "computation" energy consumption of an assembly $\mathbf{A}$  subject to an overall external load $\mathbf{\sigma}$ \vincenzo{$\mathbf{\sigma}$ e' il vettore dei $\sigma$ indirizzati ai vari servizi} is defined as : \vincenzo{definizione  da rivedere, il costo complessivo e' quello causato  dai nodi "sorgente"$\in\mathbf{U}$}
+%
+%\begin{footnotesize}
+%\begin{equation}
+%\scriptsize
+%\mathbf{E}^{comp}_t(S, \mathbf{\sigma}) = \sum_{S\in\mathbf{B}} E^{comp}_t(S,\lambda^{tot}_S)
+%\end{equation}
+%\label{eq:compute-cost}
+%\end{footnotesize}
+%
+%If we consider that serving a single request costs, for each service, an energy consumption unit and that services are invoked only once then, Referring to Figure~\ref{fig:assembly}: $S_5$ computation energy consumption is 2, cause is used by $S_2$ and $S_3$ to solve their dependency, similarly, computation energy consumption is 1 for $S_4$, 1 for $S_2$, 1 for $S_3$. The resulting computation energy consumption of the assembly rooted in $S_1$ is then the sum of such energy demand, i.e., 5. \mirko{we can refine the example for computation cost and communication cost once the energy model is stable}
+%\end{shaded}
+%%%%%%%%%%% FINE PEZZO IN GRIGIO %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Given a fully resolved assembly $\mathbf{A}=\mathbf{S}\times\mathbf{E}$,
+let us consider first its global system quality. From the QoS perspective, we define as follows the \textit{Global  QoS} delivered by all services in $\mathbf{A}$:
+
+\begin{footnotesize}
+\begin{equation}
+GQoS(\mathbf{A}) = \frac{1}{|\mathbf{S}|} \sum\limits_{S \in \mathbf{S}} {S.Q} 
+\label{eq:global-qos}
+\end{equation}
+\end{footnotesize}
+
+\noindent
+where $S.Q$ is defined as in Equation~(\ref{eq:compound_utility2}).
+
+From the energy consumption perspective,  we define as follows the \textit{Global  Energy Balance} delivered by all services in $\mathbf{A}$:
+
+\begin{footnotesize}
+\begin{equation}
+GEB(\mathbf{A}) = \frac{1}{|\mathbf{N}|} \sum\limits_{n \in \mathbf{N}} {\Big(G_n - \sum\limits_{\substack{S \in \mathbf{S}\\s.t.node(S)=n}} {(S.\rho_I^{comp}+S.\rho_I^{comm})} \Big)}
+\label{eq:global-energy}
+\end{equation}
+\end{footnotesize}
+\vincenzo{nota: eq. \ref{eq:global-energy} assume implicitamente che l'energia green in eccesso prodotta da un nodo possa compensare i consumi di altri nodi; se questo non fosse vero (se cioe' l'energia green prodotta localmente puo' solo essere consumata in loco), eq. \ref{eq:global-energy} andrebbe riscritta come segue:}
+\begin{footnotesize}
+\begin{equation}
+GEB(\mathbf{A}) = \frac{1}{|\mathbf{N}|} \sum\limits_{n \in \mathbf{N}} {\min\Big\{0, \Big(G_n - \sum\limits_{\substack{S \in \mathbf{S}\\s.t.node(S)=n}} {(S.\rho_I^{comp}+S.\rho_I^{comm})}\Big) \Big\}}
+\label{eq:global-energyBIS}
+\end{equation}
+\end{footnotesize}
+
+\noindent
+where $G_n$ in the green energy generation rate of node $n \in \mathbf{N}$, and $S.\rho_I^{comp}$  and $S.\rho_I^{comm}$ are defined as in Equations~(\ref{eq:comp-rate}) and~(\ref{eq:comm-rate}), respectively.
+%, with the load vectors $\Lambda_S^{tot}$ defined in Section~(\ref{sec:loadmodel}). 
+We use $S.\rho_I^{comp}$  and $S.\rho_I^{comm}$ in the definition of $GEB(\mathbf{A})$ to avoid counting more than once the energy consumption caused by a service.\vincenzo{e' giusto?}
+
+%Finally, we define as follows the \textit{global system quality}:
+%
+%\begin{equation}
+%\xi(\mathbf{A}) = \omega \cdot  GQoS(\mathbf{A}) + (1-\omega)\cdot GEB(\mathbf{A})
+%\label{eq:global-q}
+%\end{equation}
+%\noindent with $0\leq\omega\leq 1$.
+%
+%However, $\xi(\mathbf{A})$ as defined in Equation~(\ref{eq:global-q}) does not allow to capture to what extent all involved services fairly 
+%share?contribute to? the average quality measured by this index.
+We remark that both $GQoS(\mathbf{A})$ and $GEB(\mathbf{A})$ are "higher is better" indexes.
+However, they do not allow to capture to what extent all involved services fairly share?contribute to? the measured average quality.
+To this end,  
+we introduce the following \textit{fairness} indexes based on the \textit{Jain's fairness index}~\cite{Jain98} as additional measures of the achieved social welfare, to measure how uniform is the quality  achieved by all the participating services, from the QoS and energy consumption perspectives, respectively:
+
+\vincenzo{per indice fairness: considerare come alternativa a Jain  il criterio di massimizzazione della qualita' (QoS, energia) peggiore ?}
+
+
+\begin{footnotesize}
+\begin{equation}
+FQoS(\mathbf{A}) = \frac{(\sum\limits_{S \in \mathbf{S}}{S.Q})^2}{|\mathbf{S}|\sum\limits_{S \in \mathbf{S}} {S.Q^2}}
+\label{eq:qos-fairness}
+\end{equation}
+\end{footnotesize}
+
+\begin{footnotesize}
+\begin{equation}
+FEB(\mathbf{A}) = \frac{\Big(\sum\limits_{n \in \mathbf{N}} {\Big(G_n - \sum\limits_{\substack{S \in \mathbf{S}\\s.t.node(S)=n}} {(S.\rho_I^{comp}+S.\rho_I^{comm})} \Big)}\Big)^2}{|\mathbf{N}|{\sum\limits_{n \in \mathbf{N}} {\Big(G_n - \sum\limits_{\substack{S \in \mathbf{S}\\s.t.node(S)=n}} {(S.\rho_I^{comp}+S.\rho_I^{comm})} \Big)}^2}}
+\label{eq:energy-fairness}
+\end{equation}
+\end{footnotesize}
+
+
+The value of these fairness indexes ranges from $\tfrac {1}{|\mathbf{S}|}$ or $\tfrac {1}{|\mathbf{N}|}$, respectively (worst case), to 1 (best case), and it is maximum when all services deliver the same quality (QoS or energy consumption) level. In general,  indexes of this type penalize situations where the quality achieved by different services is highly unbalanced. Hence, by using $FQoS(\mathbf{A})$ or $FEB(\mathbf{A})$, we intend to reward assemblies that 
+%rely on the fair contribution of each participating service to 
+result in a fair share of 
+the overall quality measured by $GQoS(\mathbf{A})$ and $GEB(\mathbf{A})$, respectively. 
+
+%??We point out that, in our load-dependent setting where increasing load tends to worsen the QoS attributes, the more uniform is the global QoS, the more uniform the load distribution tends to be.??
+
+%\vincenzo{commento finale: come considerare in modo combinato gli indici di QoS e energy? combinazione lineare (SAW)? (in questo caso bisognerebbe normalizzare); oppure approccio Pareto-like?}
+

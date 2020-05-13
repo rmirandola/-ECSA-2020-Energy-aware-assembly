@@ -1,0 +1,70 @@
+Contemporary cyber physical systems (for domains like smart cities, intelligent transportation systems, augmented reality) more and more envision the definition of applications that  dynamically emerge as opportunistic aggregation of autonomous and independent resources available within the application environment. The service-oriented architecture (SoA) paradigm, in particular its  micro-service  evolution, appears well suited as reference architectural model for this kind of applications, as it supports the (recursive) vision of new services built as an assembly of   independent services, where each service offers specific functionalities, and could require functionalities offered by others to carry out its own task.
+
+However, to be successfully adopted in these emerging computing environment, the building/definition of the services assembly should be able to tackle the following main issues: 
+(i) decentralization: services are offered by autonomous and independent resources distributed in the environment, which makes hardly usable assembly procedures based on the presence of some centralized assembly manager;
+(ii) dynamics: the offered services are not statically defined but they appear and disappear or change their behavior;
+(iii) quality-awareness: the assembly should be able to guarantee quality of service (QoS) requirements (e.g., timeliness, availability, cost).
+
+Besides them, another major issue to be considered is:
+(iv) energy-awareness (efficiency?): the assembly should be able to take into account the energy consumption due to computation and to communication activities. This latter issue is particularly important for several reasons: besides sustainability concerns that are more and more important in the contemporary world,  cyber physical systems  often rely on battery-powered resources, where a parsimonious and effective use of available energy is mandatory to extend the system lifetime.
+
+Although some effort has been devoted in the past to services assemblies and on their quality of services, only recently ,with the growing interest of the community on sustainability themes, the energy consumption/efficiency? of composite services has received attention/altro 
+Examples can be found in \ref{cloud,cps}, where service composition of cloud services and of cloud/fog/edge services has been studied with the goal to minimize the energy consumption by guaranteeing a given QoS. However, to the best of our knowledge, no available solution exists yet  able to deal with all the aspects (i)-(iV) mentioned above.
+
+In this paper, we start to build a solution of the following problem:
+\begin{framed} 
+how to device a decentralized procedure to dynamically build and maintain over time a fully resolved?functional? assembly of distributed services that are able to collectively fulllfil functional and QoS requirements while minimizing the energy consumption in case of openness and variability of the execution environment.
+\end{framed}  
+
+Specifically, we propose a (fully) decentralized and dynamic service assembly framework whose main characteristics are: (i)  a system architecture with explicit modelling of service consumption both for processing and communication activities; (ii) an energy-aware service selection method; (iii)  a set of social welfare indexes taking into account quality and energy aspects. 
+
+\paragraph{Motivating scenario}
+
+As a motivating scenario, let us consider the social sensing application (e.g., inspired by~\cite{CenceMe}) shown in Figure~\ref{fig:Scenario}. Its goal is to infer the social situation of a person (attending a meeting, biking, running, etc.) from data coming from different sensors, and to make it available to people in a given area through social networks so to avoid having too many people in a given space. 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/MotivatingScenario.pdf}
+    \caption{Motivating Scenario}
+    \label{fig:Scenario}
+\end{figure}
+
+
+\raffaela{forse possiamo semplificare la figura di FGCS? Io non ho il sorgente}This application can be built from the aggregation of some logically distinct building blocks that likely include: a \textit{root} module implementing the application's orchestration logic; a set of different sensors providing data about the person's context; one or more compute intensive modules that aggregate data from both these sensors to extract relevant features and draw conclusions about the current situation; a \textit{Social Network} module to share the current social situation. Besides, these modules require basic \textit{Computing}, and \textit{Communication} resources to fulfill their processing and communication needs, respectively. 
+
+We can easily figure out a deployment scenario for this application where all the dependencies expressed by its modules are resolved by services hosted at a single node (typically, some kind of personal device like a smartphone). However, in the envisioned system with autonomous and pervasive resources, several alternatives are likely available. For example, sensor data dependencies can be, at least partially, fulfilled by sensors hosted by other personal devices, or dispersed in the environment.  Each such service will be likely interested in experiencing a ``good'' quality from the services that will be selected to this end with a minimum consumption of energy. 
+
+Let us consider a simple example, where the application goal can be achieved by using service S1 and S2 or using S3, like in figure \ref{fig:es-serv}. 
+
+Each abstract service $S_i$ can be replaced with one of its concrete atomic services ($S_{ij}$), which are same on function but different with on QoS and Energy consumption. The assembly of concrete services will have to take into account these aspects. Let us suppose for the sake of simplicity, that the QoS requirements are limited to the service execution time. If the attributes of $S_{ij}$ are the one in Table \ref{tab: attr} expressed in \emph{time units} and \emph{energy units}, then we can observe that a selection of the service based only on the QoS requirement would lead to the selection of $S_{31}$, while, taking into account also the energy aspect, we could prefer the combination of $S_{11}$ and $S_{21}$, which as the minimum energy consumption even if a slight higher execution time. 
+
+
+\begin{figure}[htp]
+\centering
+\hfill
+\begin{minipage}[b]{.4\columnwidth}
+%  \centering
+    \includegraphics[width=0.5\textwidth]{figures/esempioserv.pdf}
+  \caption{Service selection example}\label{fig:es-serv}
+\end{minipage}\hfill
+\begin{minipage}[b]{.6\columnwidth}
+%  \centering
+\begin{tabular}{| p{1.5cm} | p{1.5cm} | p{1.2cm} | p{1.3cm} | p{1.3cm} |}  
+    \hline
+   \textbf{Abstract Service} &  \textbf{Concrete Sevice} & \textbf{Quality} & \textbf{Comp. Energy} & \textbf{Comm. Energy}  \\
+    \hline
+   $ S_1$ & $S_{11} $& 120 & 5 &10 \\ 
+   		& $S_{12}$ & 130 & 7 &15 \\ 
+    \hline
+  $ S_2$ & $S_{21}$ & 50 & 2 & 2 \\ 
+   		     \hline
+$ S_3$ & $S_{31}$ & 140 & 10 &10 \\ 
+   		& $S_{32}$ & 190 & 15 &10 \\     
+     \hline   
+\end{tabular}
+  \captionof{table}{Services attributes}\label{tab: attr}
+\end{minipage}\hspace*{\fill}
+\end{figure}
+
+
+
+The paper is organized as follows....

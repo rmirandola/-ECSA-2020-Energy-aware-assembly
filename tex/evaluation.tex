@@ -1,0 +1,20 @@
+In this section we present a set of simulation experiments to assess... ? . The experiments aim at ... ?. To this end, we implemented a large-scale simulation model for the PeerSim simulator~\cite{Montresor:2009}.
+
+We experiment with a deployment scenario in line with social sensing application presented in~\cite{Dangelo:2020}, where the goal is to infer the social situation of a person from data coming from different sensors. We mimic a wireless sensor network (WSN) deployment scenario of an edge computing application running in an university/campus, stadium or shopping mall.
+
+\subsection{Experiment setting}
+In classsic WSN applications, the energy cost to transmit one bit is typically around 500-1000 times greater than a single 32-bit computation~\cite{Barr:2006,Singh:2002} (i.e., for the same amount of bits, the communication energy cost is one to two order of magnitude bigger than the computation energy cost). Thus, for applications with simple functionality, striving for CPU energy-efficiency might not be worthwhile~\cite{Yang:2006}. However, with the increasing development of more advanced, computationally intensive applications at the edge of the network, the energy consumption for CPU operations is playing an important role on the total energy footprint of the system. Hence, with complex applications deployed in WSN, it is reasonable to consider the computation and communication costs equally relevant. Then in the experimentation, we define the cost of a k-bit CPU operation in the network equal to the average cost of a k-bit transmission. 
+
+We simulate communication thought state of the art wireless technology (e.g., BT 5.2, 5G/6G) and deploy the services in an network area with diameter of 200 meters. We adopt the latency-centric model described in Section~\ref{?} as communication energy consumption model. In the identified scenario, and for the considered network diameter, the energy cost of a k-bit transmission is on average two times more costly than the energy cost of receiving k-bit.
+
+The nodes are randomly positioned in the area with symmetric latency links and are endowed with the same energy generation rate. Without loss of generality, we assume that the packet loss in the network is null and that each node in the network hosts a single service and offers basic computing and communication functionalities.
+
+%To model device heterogeneity we characterize each node in the network with a different CPU and energy state. In particular, in the experimentation, the difference between the least and most energy demanding CPU operation is at most threefold. The same applies for the energy state, i.e., the strongest node has at most three times more battery then the weaker node.
+
+\subsection{Greedy selection}
+
+\subsection{Fair selection}
+
+\mirko{come selezionare fair?}
+
+

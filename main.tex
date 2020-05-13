@@ -1,0 +1,162 @@
+\documentclass{llncs}
+\usepackage[utf8]{inputenc}
+
+\usepackage[normalem]{ulem} % for \sout
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[colorlinks]{hyperref}
+\hypersetup{citecolor=blue}
+\hypersetup{linkcolor=red}
+\hypersetup{urlcolor=red}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{mathrsfs, stmaryrd,amsfonts, mathbbol, bbding}
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{booktabs}
+\usepackage{alltt}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{graphicx, wrapfig}
+\usepackage{todonotes}
+
+
+\usepackage{multirow}
+\usepackage[noend]{algpseudocode}
+\usepackage{mathrsfs, stmaryrd,amsfonts, mathbbol, bbding}
+\usepackage{alltt}
+\usepackage{relsize}
+\usepackage{framed}
+
+\newcommand{\ra}{$\rightarrow$}
+\newcommand{\ugh}[1]{\textcolor{red}{\uwave{#1}}} % please rephrase
+\newcommand{\ins}[1]{\textcolor{blue}{\uline{#1}}} % please insert
+\newcommand{\del}[1]{\textcolor{red}{\sout{#1}}} % please delete
+\newcommand{\chg}[2]{\textcolor{red}{\sout{#1}}{\ra}\textcolor{blue}{\uline{#2}
+}}
+
+\usepackage{ifthen}
+\usepackage{amssymb}
+\newboolean{showcomments}
+\setboolean{showcomments}{true} % toggle to show or hide comments
+\ifthenelse{\boolean{showcomments}}
+  {\newcommand{\nb}[2]{
+    \medskip\noindent\fcolorbox{gray}{yellow}{\bfseries\sffamily\scriptsize#1:}
+    {\sf\small$[$\textit{#2}$]$\medskip}
+   }
+   \newcommand{\version}{\emph{\scriptsize$-$working$-$}}
+  }
+  {\newcommand{\nb}[2]{}
+   \newcommand{\version}{}
+  }
+\usepackage{color,framed}
+\definecolor{shadecolor}{gray}{0.9}   
+  
+  
+%\usepackage[justification=centering]{caption}
+
+\newcommand\mauro[1]{\nb{Mauro}{#1}}
+\newcommand\mirko[1]{\nb{Mirko}{#1}}
+\newcommand\vincenzo[1]{\nb{Vincenzo}{#1}}
+\newcommand\raffaela[1]{\nb{Raffaela}{#1}}
+
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% end Macros for proof-reading
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\newcommand{\computil}[1]{\ensuremath{\mathbf{U}(#1)}} % compound utility
+\newcommand{\computilt}[1]{\ensuremath{\mathbf{U}_t(#1)}} % compound utility
+\newcommand{\ssin}[1]{\ensuremath{#1.\mathit{In}}} % S.in
+\newcommand{\ssint}[1]{\ensuremath{#1.\mathit{In}_t}} % S.in
+\newcommand{\ssout}[1]{\ensuremath{#1.\mathit{Out}}} % S.out
+\newcommand{\ssoutt}[1]{\ensuremath{#1.\mathit{Out}_t}} % S.out
+\newcommand{\sstype}[1]{\ensuremath{#1.\mathit{Type}}} % S.Type
+\newcommand{\sscontext}[1]{\ensuremath{#1.\mathit{Context}}} % S.Context
+\newcommand{\ssdeps}[1]{\ensuremath{#1.\mathit{Deps}}} % S.Deps
+\newcommand{\ssutil}[1]{\ensuremath{#1.\mathit{Util}}} % S.Util
+\newcommand{\ssutilt}[1]{\ensuremath{#1.\mathit{Util}_t}} % S.Util_t
+
+
+\newcommand{\ssalt}[1]{\ensuremath{#1.\mathit{Alt}}} % S.Alt
+\newcommand{\ssavail}[1]{\ensuremath{#1.\mathit{Available}}} % S.Available
+\newcommand{\sshist}[1]{\ensuremath{#1.\mathit{History}}} % S.History
+\newcommand{\sslast}[1]{\ensuremath{#1.\mathit{Last}}} % S.Last
+\newcommand{\ssfeed}[1]{\ensuremath{#1.\mathit{Feedback}}} % S.Feedback
+\newcommand{\ssfeval}[1]{\ensuremath{#1.\mathit{FEval}}} % S.Feedback
+%
+%
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argrand}{arg\,rand}
+\DeclareMathOperator*{\argavg}{arg\,avg}
+\newcommand{\avg}[1]{\ensuremath{\langle#1\rangle}}
+\newcommand*{\defeq}{\stackrel{\mathsmaller{\mathsf{def}}}{=}}
+%
+%
+\newcommand*{\Resize}[2]{\resizebox{#1}{!}{$#2$}}%
+
+\newcommand{\gmw}{{\sc GoPrime}}
+\newcommand{\Linn}{Linnaeus University, V\"axj\"o, Sweden}
+\newcommand{\Polimi}{Politecnico di Milano, Milano, Italy}
+\newcommand{\UniRM}{Universit\`a di Roma Tor Vergata, Roma, Italy}
+
+\begin{document}
+
+\title{Energy-aware Service Assembly}
+
+\author{M. Caporuscio\inst{1} \and M. D'Angelo\inst{1} \and V. Grassi\inst{2} \and R. Mirandola\inst{3}}
+
+%\authorrunning{M. Caporuscio et al.}
+
+\institute{Linnaeus University  (Sweden), \email{\{mauro.caporuscio, mirko.dangelo\}@lnu.se}
+\and
+ Universit\`a di Roma Tor Vergata (Italy), \email{vgrassi@info.uniroma2.it}
+\and
+Politecnico di Milano (Italy),  \email{raffaela.mirandola@polimi.it}}
+
+
+\maketitle
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction and Motivation}
+\input{./tex/Introduction-2.tex}
+
+\section{System model}  \label{sec:system-model}
+%\input{./tex/system-model.tex}
+\input{./tex/system-model-2.tex}
+
+\section{Energy model} \label{sec:energymod}
+%\input{./tex/energy-model.tex}
+\input{./tex/energy-model-2.tex}
+
+\section{Energy(Power?)-aware service selection} \label{sec:service-select}
+%\input{./tex/service-selection.tex}
+\input{./tex/service-selection-2.tex}
+
+\input{tex/operation}
+
+
+\section{Experimental Evaluation}
+\input{./tex/evaluation.tex}
+
+\section{Related Work}
+\input{./tex/related.tex}
+
+\section{Conclusion}
+\input{./tex/conclusion.tex}
+
+\bibliographystyle{splncs04}
+\bibliography{biblio}
+
+\newpage
+
+\appendix
+\input{./tex/appendix-2.tex}
+\end{document}

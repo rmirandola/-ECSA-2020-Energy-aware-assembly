@@ -1,0 +1,232 @@
+%\section{System model} \label{sec:system-model}
+
+%\subsection{Structural Model}
+
+
+\begin{figure}[t]
+\includegraphics[width=0.8\textwidth]{figures/example.pdf}
+\centering
+\end{figure}
+
+We consider a set $\mathbf{S}$ of  services, hosted by a set $\mathbf{N}$ of nodes of a distributed system (e.g. nodes of an edge cloud architecture).
+% communicating each other through a network. 
+ We assume that each node consumes energy (to maintain its state when activated and to support  the activities of software-implemented services it is hosting), and can possibly produce green energy (e.g. by wind or solar sources) that can be used to totally or partially compensate its local energy consumption.  Each node offers to services it is hosting a set of basic services needed for their execution  (e.g., computing, communication and storage services). For the sake of simplicity, in this paper we limit ourselves to consider only computing and communication services offered by a node.
+Moreover, we also assume that each node offers a single type of computing and communication service. We leave to future work the extension of our model to other basic services categories (e.g.: storage) and to different types of services within each category (e.g., both specialized GPU and general purpose CPU  as computing services).
+%\vincenzo{se consideriamo in modo distinto computing e communication services, forse dovremmo trovare il modo di specificare nel modello che un servizio sw deve essere connesso a servizi di computing e communication che risiedono sullo stesso nodo (si potrebbe semplificare assumendo che i servizi sw hanno un binding con un nodo che offre collettivamente tutti i servizi basic necessari; pero' in questo modo non si riuscirebbe a rappresentare bene il fatto che uno stesso nodo potrebbe offrire tipi diversi di servizi basic (p.es. CPU+GPU, WiFi+Bluethoot): dobbiamo scegliere tra semplicita' e generalita'; per ora, ignoro questo problema nella notazione usata)}
+
+%In the model described below, we denote by $S$, $S_i$ single elements of the set $\mathbf{S}$, and by $n$, $n_i$ single elements of the set $\mathbf{N}$. 
+We denote by $compserv(n)\in\mathbf{S}$ and $commserv(n)\in\mathbf{S}$ the computing and communication service offered by a node $n\in\mathbf{N}$, respectively, and   by $\mathbf{B}\subseteq\mathbf{S}$ the set of all basic computing and communication services offered by nodes in $\mathbf{N}$ (i.e., $\mathbf{B}=\{S\in\mathbf{S}|S=compserv(n)\lor S=commserv(n)$ for some $n\in\mathbf{N}\}$). Finally, we denote by $node(S)\in\mathbf{N}$ the node hosting service $S\in\mathbf{S}$.
+\footnote{With these definitions, it always holds $node(compserv(n))=n$ and $node(commserv(n))=n$.}
+
+Given these initial definitions, we model a service $S\in\mathbf{S}$ as a tuple $\langle\mathit{Type}, 
+%\mathit{Context}, 
+\mathit{Deps}, \mathit{Prov}, \mathit{Req} 
+%\mathit{L}, \mathit{Q}, \mathit{E}
+\rangle$, where:
+
+%\vincenzo{sto usando la nozione estesa di tipo, che include funzione e contesto}
+\begin{itemize}
+
+\item $\sstype{S} \in \mathbf{T}= \mathbf{T'}\bigcup\{none, comp, comm\}$ denotes the type of the provided interface (we say that $\sstype{S}$ is the type of $S$).
+%, and denote by $T$, $T_i$ single elements of the set $\mathbf{T}$). 
+We assume the existence of a function 
+$\mathit{match}: \mathbf{T}\times\mathbf{T} \rightarrow [0,1] $ such that
+$\mathit{match}(T_1,T_2)=0$ 
+if type $T_1$ does not match type $T_2$ and
+$\mathit{match}(T_1,T_2) > 0$ 
+if a matching exists according to some
+suitable matching criterion
+~\cite{Paolucci:2002,Caporuscio:2015:JSS}.
+As shown by its definition, the set $\mathbf{T}$ always includes the  $comp$ and $comm$ types, with $\sstype{compserv(n)}=comp$ and $\sstype{commserv(n)}=comm$. Besides them, $\mathbf{T}$ may in general include other types, generically indicated by the set $\mathbf{T'}$.
+
+%If $\sstype{S}=none$, then $S$ represents a \textit{source} service (e.g. a personal device carried by a human user) that does not provide any composable  functionality with other services, but only acts as a source of requests addressed to its dependencies. We denote by  $\mathbf{U}  \subseteq \mathbf{S}$ the set of all source services. 
+
+\item $\ssdeps{S} \subseteq  \mathbf{T}$ is the set  of  required dependencies for $S$.
+We assume that  $\ssdeps{S}$ is fixed for each service and known in advance. Note that the dependency set $\ssdeps{S}$ does not contain duplicates, meaning that a service may depend at most once on any specific interface type in a given context. If $\ssdeps{S} = \emptyset$, then $S$ is a \textit{basic} service (i.e. $S\in\mathbf{B}$) that do not need to be connected to other services to carry out its function. On the other hand, for each $S\in\mathbf{S}\setminus\mathbf{B}$ we assume that $\ssdeps{S}$ includes at least a dependency 
+$d_1=comp$ 
+and a dependency 
+$d_2=comm$: in this way we model the fact that each non basic service needs at least to be bound to a computing and a communication service, for its internal operations and for its interactions with other services. 
+For each $d\in\ssdeps{S}$ we assume that it is known (e.g. through a locally performed monitoring activity) a value
+ $\mu_{S,d}$, which represents the average number of times service $S$ requires dependency $d$ to fulfill each request it has received. 
+%
+%\mauro{Non dovrebbe essere il contrario? $S.Prov <-> S.Req$}
+
+\item $S.Prov \subseteq \mathbf{S}$ is the set of \textit{Providers} of $S$, i.e. the set of services to which  $S$ is bound   to resolve  its dependencies. 
+For services $S\in\mathbf{S}\setminus\mathbf{B}$, 
+%we denote by $res(S,d)\in S.Prov$ the service, if it exists, to which $S$ is currently bound to resolve its dependency $d\in\ssdeps{S}$.  \vincenzo{vista la definizione di $res()$, forse queste due definizioni successive sono superflue} Moreover, 
+we denote by $comp(S)\in\mathbf{B}$ and $comm(S)\in\mathbf{B}$ the computing and communication services used to resolve dependencies $comp\in\ssdeps{S}$ and $comm\in\ssdeps{S}$, respectively. It must obviously hold $node(comp(S))=node(comm(S))$ for any $S\in\mathbf{S}\setminus\mathbf{B}$.
+%\mauro{Alternativa: Outgoing Bindings}
+
+\item $S.Req \subseteq \mathbf{S}$ is the set of \textit{Requesters} of $S$, i.e. is the set of other services that are bound to $S$  to resolve one of their dependencies. 
+%\mauro{Alternativa: Incoming Bindings}
+
+%\item $\mathit{S.L}$ is the \textit{load profile} of $S$, that  describes the load $S$ addresses to other services as a function of the load it (possibly) receives. A complete characterization of $\mathit{S.L}$ will be given in Section \ref{sec:loadmodel}.
+
+%\item $\mathit{S.q}\in \mathbb{R}$ is an \textit{internal QoS} attribute (e.g., reliability, response time),  which express the local quality of the service $S$, depending only on internal characteristics of  $S$.
+%% and of the node hosting it. 
+% If $S$ has a non-empty set of dependencies, then $\mathit{S.q}$ gives only a partial view of the QoS of $S$, which also depends on the QoS of the services used to resolve them. For example, in case of a reliability attribute and a software-implemented service $S$,   its $\mathit{S.q}$  attribute could represent the reliability of the $S$ internal code, without considering the reliability of called services.
+%\item $\mathit{S.Q}$ is the \textit{QoS profile} of $S$, that describes the load-dependent QoS delivered by $S$.
+%% as a function of the load of service requests addressed to it. 
+%If $S$ has a non-empty set of dependencies, then $\mathit{S.Q}$  also depends on the QoS of the services used to resolve them. A complete characterization of $\mathit{S.Q}$ will be given in Section \ref{sec:qualitymod}.
+
+%\item $\mathit{S.E}$ is the \textit{energy profile} of $S$, that describes the load-dependent energy consumption caused by $S$.
+%% as a function of the load of service requests addressed to it. 
+%A complete characterization of $\mathit{S.E}$ will be given in Section \ref{sec:energymod}.
+
+\end{itemize}
+
+A service is either {\em fully resolved} or {\em partially resolved}. A service $S$ is \emph{fully resolved} if either: ($i$) $S$ has no dependencies (i.e., $S\in\mathbf{B}$); or ($ii$) for all $d \in \ssdeps{S}$ there exists a fully resolved service $S' \in S.Prov$ such that 
+$match(d,\sstype{S'})>0$. 
+%$\land$ $node(comp(S))=node(comm(S))$ (i.e., the computing and communication services resolving the $comp$ and $comm$ dependencies of $S$ are colocated on the same node). 
+%
+%\mirko{$node(comp(S))=node(comm(S))$ mettere questo come constraint per alleggerire notazione di fully resolved?}
+
+On the other hand, a \emph{partially resolved} service $S$ has a non-empty list of dependencies, and at least one dependency is either not matched, or is matched by a partially resolved service. 
+
+\vincenzo{spero di non aver sbagliato con il senso delle frecce e Prov e Req :-)  ; controllare} A \textit{service assembly} $\mathbf{A}$ is a directed graph $\mathbf{A} = (\mathbf{S}, \mathbf{E})$, where $\mathbf{E} \subseteq \mathbf{S} \times \mathbf{S}$ is the set of resolved dependencies. Specifically, a directed edge $(S_i, S_j) \in \mathbf{E}$ denotes that $S_i$ is using $S_j$ to resolve one of its dependencies. In general, a given $S_i$ has multiple simultaneous outgoing bindings (towards services in $S_i.Prov$), one for each dependency, and can have multiple simultaneous incoming bindings  from other services (belonging to  $S_i.Req$), using $S_i$ to resolve one of their dependencies.
+ 
+
+%Finally, we point out that our model adheres to the {\em Service Statelessness} design principle~\cite{Erl:2005}, and services do not maintain the interaction state between service invocations -- i.e., each request is served in complete isolation, without relying on information from previous requests. Hence, we assume that the state of a given interaction $(S_i, S_j) \in \mathbf{E}$ between  $S_i$ (i.e., the consumer) and $S_j$ is kept by $S_i$, and requests include all information necessary for their processing. Service statelessness enhances ($i$) decoupling of interacting services, ($ii$) flexibility of the model, since it allows for easily rearranging the assembly at runtime and, ($iii$) scalability, by exploiting service caching and replication.
+
+
+
+According to this model, the problem introduced above can be restated as:\vincenzo{da rivedere}
+\begin{framed} 
+\textit{how to dynamically build and maintain over time a fully resolved assembly of distributed services that are \textcolor{blue}{ able to collectively fulfill}  functional, QoS and energy requirements in case of openness, variability, unpredictability and scalability of the execution environment.}
+\end{framed}
+
+%%\subsection{Load model}
+%\section{Load model}
+%\label{sec:loadmodel}
+%As pointed out in the Introduction, we want to explicitly take into account in our QoS\&energy-driven assembly construction, the possible load-dependent nature of  both the energy consumption and QoS of each service. Indeed, with regard to QoS attributes, load dependence  obviously holds for attributes in the performance domain (e.g., response time), where the load has a negative impact on their value. Besides, it may also hold for other domains like  dependability, where increasing load could increase the likelihood of failures~\cite{SoftwareAging2007,Schroeder:2006}, or  cost, for example in case of cost schemes based on congestion pricing~\cite{congPricing}. With regard to energy consumption, it is reasonable to assume that it increases with increasing load addressed to a service.
+%
+%To this end, we assume that each service $S$ includes in its characterization  a load profile $S.L$ that allows capturing in a simple yet sufficiently expressive way the load dependencies among services in the system. 
+%
+%Let us define as \textit{load vector} of service  $S\in\mathbf{S}$ a vector $\mathbf{\Lambda}_S=[\lambda_S(n)]_{n\in\mathbf{N}}$,  where each vector entry  $\lambda_S(n)$ denotes a  flow of requests (expressed as requests per unit time) addressed to service $S$ by services hosted by node $n$.  For each service $S\in \mathbf{S}$ the associated \textit{load profile} is defined as follows:
+%
+%\begin{footnotesize}
+%\begin{equation}
+%S.L = \begin{cases} 
+%\Sigma_S = \{\sigma_{S,d}\in\mathbb{R^+}|d \in \ssdeps{S}\}& \mbox{if $S\in
+%\mathbf{U}$} \\
+%\Theta_S = \{\theta_{S,d}:\mathbb{R}^{|\mathbf{N}|}\rightarrow \mathbb{R}|d \in \ssdeps{S}\}
+%  & \mbox{if $S\in\mathbf{S}\setminus\mathbf{U}$}
+%\end{cases}
+%\label{eq:load-profile}
+%\end{equation}
+%\end{footnotesize}
+%
+%\noindent where:
+%\begin{itemize}
+%\item each $\sigma_{S,d}\in\Sigma_S$ models a \textit{traffic source},  represented by the rate of service requests that source service $S$ addresses to its dependency $d$;
+%
+%\item each $\theta_{S,d}\in\Theta_S $ is a   \textit{transfer function}, defined as:
+%\begin{footnotesize}
+%\begin{equation}
+%\theta_{S,d}(\mathbf{\Lambda}_S)=\mu_{S,d}\cdot\sum_{n\in\mathbf{N}}\lambda_S(n)
+%\label{eq:theta-function}
+%\end{equation}
+%\end{footnotesize}
+%
+%\noindent
+%where $\mu_{S,d}$ represents the average number of times service $S$ requires dependency $d$ to fulfill each request it has received. As a consequence, $\theta_{S,d}(\mathbf{\Lambda}_S)$ is the average rate of service requests sent  to dependency
+%$d$ by a non-source service $S$ when $S$ is subject to an incoming load vector $\mathbf{\Lambda}_S$ of service requests.
+%\end{itemize}
+%
+%We assume that both $\Sigma_S$ and $\Theta_S$ are kept updated by a monitoring activity locally performed by $S$ itself or by some other entity at the node hosting $S$.
+%
+%Given a fully resolved assembly $\mathbf{A}$, the load vector expressing the overall load addressed to a non-source service $S$  is $\mathbf{\Lambda}^{tot}_S=[\lambda^{tot}_S(n)]$ where, for each $n\in\mathbf{N}$  it is:
+%
+%\begin{footnotesize}
+%\begin{equation}
+% \lambda^{tot}_S(n)=
+% \sum_{ \substack{S'\in S.Req,\\s.t. S'\in\mathbf{U}\\ \land node(S')=n}}\sigma_{S',\sstype{S}}
+% +\sum_{\substack{S'\in S.Req\\ s.t. S'\in\mathbf{S}\setminus\mathbf{U}\\ \land node(S')=n}}\theta_{S',\sstype{S}}(\Lambda^{tot}_{S'}) 
+% \label{eq:load}
+%\end{equation}
+%\end{footnotesize}
+%
+%
+%%As a consequence, for the highest services in the hierarchy of dependencies (root services, i.e., those services with $\ssoutt{S}=\emptyset$) it is $\lambda^{tot}_S=\sigma_S$. Otherwise, for lower services in the hierarchy it is recursively defined by Equation~(\ref{eq:load}).\footnote{Lower level services  include virtualized hardware resources.}
+
+
+%\section{Load-dependent QoS Model}
+%%\subsection{Load-dependent QoS Model}
+%\label{sec:qualitymod}
+%
+%We define in this section a load-dependent QoS model that expresses the QoS delivered by a service $S$ in terms of a single QoS attribute (e.g. response time, or reliability). We leave to future work the extension to multiple QoS attributes. 
+%
+%In general, the QoS delivered by a service $S$ depends on both the internal characteristics of $S$ and the QoS of other services  to which $S$ is bound  to resolve its dependencies.
+%Hence, the  QoS profile of a non-source service $S$ subject to an incoming load of service requests $\mathbf{\Lambda}_S$ is defined as follows:
+%
+%%\begin{footnotesize}
+%%\begin{equation}
+%%S.Q(\mathbf{\Lambda}_S) = \begin{cases} 
+%%q_S(\mathbf{\Lambda}_S) & \mbox{if $S\in\mathbf{B}$} \\
+%%  \bot & \mbox{if $S$ is partially resolved}\\ 
+%%\lefteqn{F_S( q_S($\mathbf{\Lambda}_S),
+%%S_1.Q(\theta_{S,\sstype{S_1}}(\mathbf{\Lambda}_S)), \dots, S_k.Q(\theta_{S,\sstype{S_k}}(\mathbf{\Lambda}_S)))} \\
+%%  & \mbox{if $S\notin\mathbf{B}$ and $S$ is fully resolved,}\\ 
+%%  & \mbox{with $S.Prov = \{S_1, \ldots, S_k\}$}
+%%\end{cases}
+%%\label{eq:compound_utility2}
+%%\end{equation}
+%%\end{footnotesize}
+%%\vincenzo{il modo con cui finora abbiamo scritto questo modello mi sembra non molto corretto, nel vecchio modo di scriverlo sembrerebbe che il carico che i servizi $S_1, \ldots, S_k$ ricevono sia solo quello che proviene da $S$, in effetti non e' cosi',  ho provato a modificare il modo di scrivere, anche se non mi soddisfa del tutto}
+%
+%%\mirko{ci eravamo detti che in realta' era corretto no?}
+%
+%\begin{footnotesize}
+%\begin{equation}
+%S.Q = \begin{cases} 
+%%q_S(\lambda_S(node(S))) & \mbox{if $S\in\mathbf{B}$} \\
+%q_S(\mathbf{\Lambda}_S) & \mbox{if $S\in\mathbf{B}$} \\
+%  \bot & \mbox{if $S$ is partially resolved}\\ 
+%  \lefteqn{F_S(\mathbf{\Lambda}_S, q_S(\mathbf{\Lambda}_S), \Theta_S,  [S_i.Q]_{S_i\in S.Prov})} \\ & \mbox{if $S\notin\mathbf{B}$ and $S$ is fully resolved}
+%%\lefteqn{F_S(\mathbf{\Lambda}_S, q_S(\mathbf{\Lambda}_S), \Theta_S,
+%%S_1.Q(\mathbf{\Lambda}_S_1)), \dots, S_k.Q(\mathbf{\Lambda}_S_k)))} \\
+%%  & \mbox{if $S\notin\mathbf{B}$ and $S$ is fully resolved,}\\ 
+%%  & \mbox{with $S.Prov = \{S_1, \ldots, S_k\}$}
+%\end{cases}
+%\label{eq:compound_utility2}
+%\end{equation}
+%\end{footnotesize}
+%
+%\noindent In Equation~(\ref{eq:compound_utility2}) if $S$ is a basic service ($S\in\mathbf{B}$), then $S$ is by definition fully resolved, and its QoS (e.g. reliability) is expressed by function $q_S()$ that only depends on the internal characteristics of $S$ and the load addressed to it. 
+%\vincenzo{spiegare che in questo caso va considerata solo la componente $\lambda_S(node(S))$ (cioe' la componente di indice $node(S)$ di $\Lambda_S$), perche'  un servizio di tipo $comp$ puo' ricevere richieste solo dal nodo a cui appartiene (piu' esattamente, solo dai servizi ospitati su quel nodo)? tutte le altre componenti di $\Lambda_S$ sarebbero zero in questo caso?}
+%Instead, if $S$ has a nonempty set of dependencies ($S\notin\mathbf{B}$) and is not fully resolved, its QoS is set to $\bot$, i.e., the special value that is guaranteed to be ``worse'' than the QoS of any fully resolved instance of $S$.  Finally, if $S$ has a nonempty set of dependencies and is fully resolved, its QoS  is computed using a function 
+%%$F_S: \mathbb{R}^{(1+|S.Deps|)} \rightarrow\mathbb{R}$, 
+%$F_S()$
+%whose value depends on the load $\mathbf{\Lambda}_S$ addressed to $S$, the internal QoS  of $S$ $q_S(\mathbf{\Lambda}_S)$, the transfer function $\Theta_S$, and the QoS $S_i.Q$ of all services $S_i\in S.Prov$ used to resolve its dependencies. For example, in case of a reliability  QoS attribute and a software-implemented service $S$,   function 
+% $F_S()$ could be instantiated as follows:
+%
+%\vincenzo{nota: ho modificato un po' il modo in cui scrivevamo le espressioni per reliability, o response time, ecc.: ho introdotto $\mu_{S,\sstype{S'}}$ perche'  $\theta_{S,\sstype{S'}}$ (che usavamo in precedenza) non si puo' usare qui, dato che rappresenta un tasso di richieste}
+%\begin{footnotesize}
+%\begin{equation}
+%h_S(\mathbf{\Lambda}_S)=r_S(\mathbf{\Lambda}_S)
+%\label{eq:reliability-h-function}
+%\end{equation}
+%\end{footnotesize}
+%
+%\begin{footnotesize}
+%\begin{equation}
+%F_S(\mathbf{\Lambda}_S, q_S(\mathbf{\Lambda}_S), \Theta_S,S.Prov) =    r_S(\mathbf{\Lambda}_S)\cdot\prod_{S'\in S.Prov} (S'.Q)^{\mu_{S,\sstype{S'}}}\label{eq:reliability-H-function}
+%\end{equation}
+%\end{footnotesize}
+%
+%%
+%%{\allowdisplaybreaks
+%%\small
+%% \vspace{-1em}
+%%\begin{align}
+%%F_S(\mathbf{\Lambda}_S, q_S(\mathbf{\Lambda}_S), \Theta_S,S.Prov) \nonumber  \\
+%%&=    r_S(\mathbf{\Lambda}_S)\cdot\prod_{S'\in S.Prov} (S'.Q)^{\theta_{S,\sstype{S'}}}      
+%%\label{eq:reliability-H-function}
+%%\end{align}
+%%}
+%
+%\noindent
+%where $r_S(\mathbf{\Lambda}_S)$ in equations (\ref{eq:reliability-h-function}) and (\ref{eq:reliability-H-function})
+% represents the load-dependent reliability of the $S$ internal code.
+%  To get  the overall reliability of $S$,  in equation (\ref{eq:reliability-H-function}) $r_S(\mathbf{\Lambda}_S)$  is then multiplied by the reliability of  services in $S.Prov$, taking into account the "intensity" of the $S$ usage of these services: in this respect, we recall that, as defined in equation (\ref{eq:theta-function}), $\mu_{S,\sstype{S'}}$ represents the average number of times service $S$ requires dependency $d$ for each received request.\textit{dire anche che tra le dipendenze richieste c'e' il "computing service", e per questa via nel calcolo della reliability di $S$ entra anche la "hw reliability" del nodo che ospita $S$?}
+

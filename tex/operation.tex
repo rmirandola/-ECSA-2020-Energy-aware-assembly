@@ -1,0 +1,34 @@
+\section{System Architecture}
+\label{sec:architecture}
+
+The goal is to drive the service-oriented system we are considering towards the construction of a service assembly that is energy efficient (see in Section~\ref{sec:welfareIndex}). In this section we present a fully decentralized architecture allowing for achieving this goal. 
+
+
+
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/NodeArchitecture.pdf}
+\caption{Node Architecture}
+\label{fig:nodeArch}
+\end{figure}
+
+Figure~\ref{fig:nodeArch} shows the set of macrocomponents deployed at each $Node_i$: \textit{Service Pool} is the set of services $S \in \mathbf{S}$ running on $Node_i$; \textit{Monitor} is in charge of monitoring energy consumption (i.e., $S.X^{comp}$ and $S.X^{comm}$ ) for every service $S$ in the Service Pool; \textit{Assembly Manager}   
+
+%, namely
+%\textit{Dissemination}, \textit{Assembly Manager}, and 
+
+
+ hosts as set of offered services (i.e., , plus an instance of these macrocomponents.
+
+%Overall, these pairs, by cooperating among them as outlined below and
+%detailed in Section~\ref{subsec:algorithm}, give rise to a fully decentralised
+%implementation of the \gmw{} operations. In particular, the {\em Assembly
+%Management} macrocomponents cooperate according to a gossip schema that allows
+%fully decentralised information dissemination and decision-making about the
+%assembly construction and maintenance. This makes the system robust and
+%scalable in the presence of events like arrival of new requirements,
+%upgrade/downgrade of service utility (including the extreme case of service
+%failure), or arrival/departure of new peers (and corresponding hosted services).

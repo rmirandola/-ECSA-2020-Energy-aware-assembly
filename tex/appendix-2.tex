@@ -1,0 +1,111 @@
+\section{Appendix}
+\subsection{Link quality estimation}
+
+\mirko{link simmetrico: banda e latenza}
+
+Communication latency and bandwidth are the two main metrics affecting energy consumption during data transfer between nodes~\cite{?}. Hence, having an estimate of how far, or what is the bandwidth, between a given service provider $S$ and service consumer $S'$, would allow assessing the energy consumption incurred for communication cost. \mirko{queste grandezze (e.g., $l_{s,s'}$ per la latenza e $b_{s,s'}$ per la banda) sono relazionate in qualche modo con $\kappa^{In}_S(S')$ e $\kappa^{Out}_S(S')$, in che modo?}.
+
+\mirko{il costo energetico di gossiping e di altre operazioni per fare stima di attributi di qualita' del link puo' essere considerato costante, uguale per tutti i nodi ed inglobato in qualche costante di costo energetico.}
+
+\mirko{nella sperimentazione definire classi di applicazioni su cui fare la sperimentazione. Determinate applicazioni sono ad esempio data intensive and latency sensitive (e.g., IoT), altre compute intensive (e.g., computational offload of heavy tasks). Queste classi potrebbero caratterizzare la scelta di alcuni parametri del modello nelle sperimentazioni}
+
+\subsubsection{Latency}
+Communication delay for interactions with services located at different nodes could have a non-negligible impact on the QoS and energy footprint of the system, as some services could be offered by distant fog/edge nodes. Due to the potential mobility of edge nodes, the communication delay may vary at runtime. This rules out approaches where these metrics are know in advance and the assembly problem solved at design-time as an optimization problem (e.g.,~\cite{Zeng:2018}). 
+
+Estimating the latency among services located at different nodes would in principle require probing all pairwise link distances, which would not scale with high numbers of concrete services and hosting nodes. For this reason, similarly to~\cite{Cardellini:2015}, we adopt a network coordinates (NC) system that provides an accurate estimate of the latency between any two network locations, without the need of an exhaustive probing. The nodes maintain the NC system through a decentralized algorithm~\cite{Dabek:2004} with linear complexity with respect to the number of network locations, thus ensuring scalability. Moreover, as this NC algorithm adopts a gossip-based information dissemination scheme, the components operations are easily integrated with the overall approach.
+
+%Therefore, we use the NC system to estimate at runtime and in a decentralized fashion the communication energy consumption between pair of nodes as a function of their distance.
+
+\subsubsection{Bandwidth}
+With the increasing advent of data streaming application, in addition to latency, bandwidth has emerged as a crucial factor characterising the quality of communication links. CDNs and edge computing applications have a new need to select servers based on bandwidth in addition to latency~\cite{Ramasubramanian:2018}. In fact, end-to-end path available bandwidth is an important metric for the performance optimisation in many high throughput distributed applications, such as video streaming and file sharing networks~\cite{Beaumont:2011}. Several solutions for bandwidth prediction exists in the literature.
+
+The Sequoia~\cite{Ramasubramanian:2018} algorithm uses a tree-embedding model for bandwidth prediction. Sequoia maintains a collection of virtual trees between the participating hosts and provides efficient latency/bandwidth prediction. Inspired by Sequoia, Song et. al.~\cite{Song:2011} design a tree-based decentralized bandwidth prediction model that, differently from the previous work, does not require a centralized component that the other nodes must communicate with. PathGuru~\cite{Xing:2009} predict outgoing and incoming bandwidth using measurement data to and from landmarks. Similarly to Sequoia a centralized component or an overlay of (landmark) superpeers is necessary to run the algorithm. 
+
+DMF~\cite{Yongjun:2010} introduces a solution based on decentralized matrix factorization, proposed in the context of latency estimation, it can be used also for bandwidth estimation. \mirko{DMF claims to be better than Vivaldi as it does not suffer from the triangle inequality violations problem}
+Similarly, Vivaldi algorithm can also be used for bandwidth prediction as there are no assumption on the elements characterizing the distance in the euclidean distance model. In this case, differently from latency, for bandwidth prediction Vivaldi algorithm is fed with the inverse of the available (bandwidth) measurements. Vivaldi and Sequoia heuristics produce symmetric bandwidth estimations. 
+
+Beaumont et. al.~\cite{Beaumont:2011} perform available bandwidth prediction with the last-mile model, in which each node is characterised by its incoming and outgoing capacities. Their heuristic compute in a decentralized way the capacities of each node.
+
+\mirko{It would be nice to use Vivaldi also for bandwidth estimation and integrate in the message exchange for latencies also the bandwidth value, however results from~\cite{Beaumont:2011} shows that Vivaldi is not appropriate for bandwidth estimation as it exhibits higher prediction error with respect to other solutions. Can we adopt it anyway?}
+
+\mirko{Good solutions for us:
+\begin{itemize}
+\item The last-mile model~\cite{Beaumont:2011}: (i) heuristic for a fully decentralized system, (ii) asymmetric incoming/outgoing bandwidth model could go well with our model. 
+\item The work in.~\cite{Song:2011} is interesting, works in fully decentralized systems but only for symmetric bandwidth estimation. This guy did the Ph.D in decentralized network bandwidth prediction. He has different approaches already implemented in PeerSim but i can't find the code. He states in his dissertation (on drive): "our approach would be able to cover more varied data sets with high accuracy than last-mile. In addition, last-mile needs high communication costs coming
+from multiple convergence steps just like DMF." 
+\end{itemize}
+}
+
+ 
+\subsection{Communication Energy Consumption Models}
+
+%\mauro{Non sicuro delle effettive relazioni matematiche tra Bandwidth, Throughput e Latency ho cercato informazioni. Ho trovato questi link interessanti: 
+%\begin{itemize}
+%    \item \url{https://www.comparitech.com/net-admin/latency-vs-throughput/}
+%    \item \url{http://user.it.uu.se/~carle/Notes/01_PerformanceTerms.html}
+%    \item \url{https://www.oreilly.com/library/view/web-performance-tuning/059600172X/ch04s02.html}
+%\end{itemize}
+%}
+
+
+Communication energy consumption could be affected by many factors. Three of the main elements used in the literature to model this aspect are: latency (or distance), bandwidth and load (rate of data/service requests).
+
+\mirko{we could have different communication energy models for different deployments/applications. Having multiple models allows us to easily refer to enstablished energy models in the literature.
+\begin{itemize}
+    \item Our work define the communication energy consumption in relation to $\kappa^{In}_S(S')$ and $\kappa^{Out}_S(S')$
+    \item A concrete deployment (e.g., wsn) lead to the definition of $\kappa^{In}_S(S')$ and $\kappa^{Out}_S(S')$ in relation to the performance quality attributes of the link (i.e.,latency and bandwidth, more?)
+    \item What to do in case of mixed deployment of our framework (e.g., cloud-fog-edge)? The energy depends on type of node and link used? (in this case every node has its own definition of kappas).
+\end{itemize}
+}
+
+\subsubsection{Latency-centric model}
+
+In Wireless Sensor Network (WSN) the total energy is restricted and how to make good use of the limited energy resource is a very important aspect. For WSN applications a latency-centric communication energy model can be adopted. In this scenario, a commonly used communication consumption model in the literature is the first-order radio model~\cite{Heinzelman:2000}. This model ignores the effects of finite bandwidth constraints and models the communication energy consumption in relation to the latency metric. \mirko{this model is originally build on distance. But distance is directly related to latency}
+
+We define as constants for each node: $E_{amp}$, i.e., the amplification cost factor and $E_{elect}$, i.e., circuit energy cost when transmitting or receiving one bit of data. Considering a single (k-bit) interaction between $S$ and $S'$ with a latency, $l_{S,S'}$, the transmission energy cost can be expressed as:
+
+\begin{equation}
+\scriptsize
+\kappa^{In}_S(S') =  k  \cdot (E_{elect} + E_{amp} \cdot l_{S,S'}^2)
+\label{eq:sending-cost-1}
+\end{equation}
+
+Likewise, the energy consumed at reception:
+
+\begin{equation}
+\scriptsize
+\kappa^{Out}_{S'}(S) = k  \cdot E_{elect}
+\label{eq:receiving-cost-1}
+\end{equation}
+
+\subsubsection{Bandwidth-centring model}
+
+In data-intensive applications where, differently from WSN, large data volumes are moved between sites over the network, ignoring the effects of finite bandwidth constraints on communication energy consumption is not an option. In fact, if the throughput is low, the total time spent on the communication channel to send the data is longer, this results in higher energy consumption. 
+
+%\mirko{devo vedere perche' gli approcci parlano di stima di banda e non di throughput}\vincenzo{mi viene di pensare che, negli scenari considerati (large data volumes are moved ...), si immagina che il mittente saturi la banda disponibile (cioe', non ci sono momenti in cui non c'e' traffico da trasmettere): in questa situazione, direi che banda   e throughput  tendono a coincidere}
+
+In this scenario, the communication time depends on the bytes of data transferred and the network throughput between the nodes hosting the services. Considering a single (k-bit) interaction between $S$ and $S'$ with a throughput, $b_{S,S'}$, the communication time spent on the channel can be expressed as:
+
+\begin{equation}
+\scriptsize
+t_{S,S'} = \frac{k}{b_{S,S'}}
+\label{eq:request-time}
+\end{equation}
+
+Thus, similarly to~\cite{Mati:2016} the transmission energy can be expressed as:
+
+\begin{equation}
+\scriptsize
+\kappa^{In}_S(S') = p_s \cdot t_{S,S'}
+\label{eq:sending-cost-2}
+\end{equation}
+
+Likewise, the energy consumed at reception:
+
+\begin{equation}
+\scriptsize
+\kappa^{Out}_{S'}(S) = p_r \cdot t_{S,S'}
+\label{eq:receiving-cost-2}
+\end{equation}
+
+Where $p_s$ and $p_r$ are the power consumption when sending and receiving data, respectively. Based on measured results $p_s > p_r$~\cite{Karthik:2010}.
