@@ -6,28 +6,42 @@
 \begin{figure}[t]
 \includegraphics[width=0.8\textwidth]{figures/example.pdf}
 \centering
+\caption{Service assembly example}\label{fig:serv-assembly}
 \end{figure}
 
-We consider a set $\mathbf{S}$ of  services, hosted by a set $\mathbf{N}$ of nodes of a distributed system (e.g. nodes of an edge cloud architecture).
-% communicating each other through a network. 
- We assume that each node consumes energy (to maintain its state when activated and to support  the activities of software-implemented services it is hosting), and can possibly produce green energy (e.g. by wind or solar sources) that can be used to totally or partially compensate its local energy consumption.  Each node offers to services it is hosting a set of basic services needed for their execution  (e.g., computing, communication and storage services). For the sake of simplicity, in this paper we limit ourselves to consider only computing and communication services offered by a node.
-Moreover, we also assume that each node offers a single type of computing and communication service. We leave to future work the extension of our model to other basic services categories (e.g.: storage) and to different types of services within each category (e.g., both specialized GPU and general purpose CPU  as computing services).
-%\vincenzo{se consideriamo in modo distinto computing e communication services, forse dovremmo trovare il modo di specificare nel modello che un servizio sw deve essere connesso a servizi di computing e communication che risiedono sullo stesso nodo (si potrebbe semplificare assumendo che i servizi sw hanno un binding con un nodo che offre collettivamente tutti i servizi basic necessari; pero' in questo modo non si riuscirebbe a rappresentare bene il fatto che uno stesso nodo potrebbe offrire tipi diversi di servizi basic (p.es. CPU+GPU, WiFi+Bluethoot): dobbiamo scegliere tra semplicita' e generalita'; per ora, ignoro questo problema nella notazione usata)}
-
-%In the model described below, we denote by $S$, $S_i$ single elements of the set $\mathbf{S}$, and by $n$, $n_i$ single elements of the set $\mathbf{N}$. 
-We denote by $compserv(n)\in\mathbf{S}$ and $commserv(n)\in\mathbf{S}$ the computing and communication service offered by a node $n\in\mathbf{N}$, respectively, and   by $\mathbf{B}\subseteq\mathbf{S}$ the set of all basic computing and communication services offered by nodes in $\mathbf{N}$ (i.e., $\mathbf{B}=\{S\in\mathbf{S}|S=compserv(n)\lor S=commserv(n)$ for some $n\in\mathbf{N}\}$). Finally, we denote by $node(S)\in\mathbf{N}$ the node hosting service $S\in\mathbf{S}$.
+We consider a distributed system consisting of a  set $\mathbf{N}$ of nodes (e.g. nodes of an edge cloud architecture), and a set $\mathbf{S}$ of (sw-implemented) services that must be deployed on these nodes. Each node provides basic computing and communication services, used by the other services hosted by the same node for their operations. For the sake of simplicity, we  assume that each node offers only a single type of computing and communication service, and do not consider other  basic  service categories (e.g.: storage). We leave to future work the extension of our model to these other  categories, and to different types of services within each category (e.g., both specialized GPU and general purpose CPU  as computing services). Each service  $S\in\mathbf{S}$ must be bound to a computing and communication service. Besides this, $S$ could require functionalities offered by other services in the set $\mathbf{S}$ to carry out its own task.
+We denote by $\mathbf{B}$ the set of all  computing and communication services offered by nodes in $\mathbf{N}$, and by $compserv(n)\in\mathbf{B}$ and $commserv(n)\in\mathbf{B}$ the computing and communication service offered by a node $n\in\mathbf{N}$, respectively. Finally, we denote by $node(S)\in\mathbf{N}$ the node hosting service $S\in\mathbf{S}\cup\mathbf{B}$.
 \footnote{With these definitions, it always holds $node(compserv(n))=n$ and $node(commserv(n))=n$.}
+We assume that services in the set $\mathbf{B}$ are the only direct sources of energy consumption, while the energy consumption of services in the set $\mathbf{S}$ is related with the use they directly or indirectly make of services in the set $\mathbf{B}$.
 
-Given these initial definitions, we model a service $S\in\mathbf{S}$ as a tuple $\langle\mathit{Type}, 
+%a set $\mathbf{S}$ of  services, hosted by a set $\mathbf{N}$ of nodes of a distributed system (e.g. nodes of an edge cloud architecture).
+%% communicating each other through a network. 
+%% We assume that each node consumes energy (to maintain its state when activated and to support  the activities of software-implemented services it is hosting), and can possibly produce green energy (e.g. by wind or solar sources) that can be used to totally or partially compensate its local energy consumption.  
+% Each node offers to services it is hosting a set of basic services needed for their execution  (e.g., computing, communication and storage services). 
+% For the sake of simplicity, in this paper we limit ourselves to consider only computing and communication services offered by a node.
+%Moreover, we also assume that each node offers a single type of computing and communication service. We leave to future work the extension of our model to other basic services categories (e.g.: storage) and to different types of services within each category (e.g., both specialized GPU and general purpose CPU  as computing services).
+%
+%We denote by $compserv(n)\in\mathbf{S}$ and $commserv(n)\in\mathbf{S}$ the computing and communication service offered by a node $n\in\mathbf{N}$, respectively, and   by $\mathbf{B}\subseteq\mathbf{S}$ the set of all basic computing and communication services offered by nodes in $\mathbf{N}$ (i.e., $\mathbf{B}=\{S\in\mathbf{S}|S=compserv(n)\lor S=commserv(n)$ for some $n\in\mathbf{N}\}$). Finally, we denote by $node(S)\in\mathbf{N}$ the node hosting service $S\in\mathbf{S}$.
+%\footnote{With these definitions, it always holds $node(compserv(n))=n$ and $node(commserv(n))=n$.}
+%
+%Given these initial definitions, we model a service $S\in\mathbf{S}$ as a tuple $\langle\mathit{Type}, 
+%%\mathit{Context}, 
+%\mathit{Deps}, \mathit{Prov}, \mathit{Req} 
+%%\mathit{L}, \mathit{Q}, \mathit{E}
+%\rangle$, where:
+
+
+For the purpose of the service  assembly procedure we intend to devise, we now introduce a more detailed   service model.  A service $S\in\mathbf{S}$ is represented as a tuple $\langle\mathit{Type}, 
 %\mathit{Context}, 
 \mathit{Deps}, \mathit{Prov}, \mathit{Req} 
 %\mathit{L}, \mathit{Q}, \mathit{E}
 \rangle$, where:
 
+
 %\vincenzo{sto usando la nozione estesa di tipo, che include funzione e contesto}
 \begin{itemize}
 
-\item $\sstype{S} \in \mathbf{T}= \mathbf{T'}\bigcup\{none, comp, comm\}$ denotes the type of the provided interface (we say that $\sstype{S}$ is the type of $S$).
+\item $\sstype{S} \in \mathbf{T}= \mathbf{T'}\bigcup\{comp, comm\}$ denotes the type of the provided interface (we say that $\sstype{S}$ is the type of $S$).
 %, and denote by $T$, $T_i$ single elements of the set $\mathbf{T}$). 
 We assume the existence of a function 
 $\mathit{match}: \mathbf{T}\times\mathbf{T} \rightarrow [0,1] $ such that
@@ -42,19 +56,25 @@ As shown by its definition, the set $\mathbf{T}$ always includes the  $comp$ and
 %If $\sstype{S}=none$, then $S$ represents a \textit{source} service (e.g. a personal device carried by a human user) that does not provide any composable  functionality with other services, but only acts as a source of requests addressed to its dependencies. We denote by  $\mathbf{U}  \subseteq \mathbf{S}$ the set of all source services. 
 
 \item $\ssdeps{S} \subseteq  \mathbf{T}$ is the set  of  required dependencies for $S$.
-We assume that  $\ssdeps{S}$ is fixed for each service and known in advance. Note that the dependency set $\ssdeps{S}$ does not contain duplicates, meaning that a service may depend at most once on any specific interface type in a given context. If $\ssdeps{S} = \emptyset$, then $S$ is a \textit{basic} service (i.e. $S\in\mathbf{B}$) that do not need to be connected to other services to carry out its function. On the other hand, for each $S\in\mathbf{S}\setminus\mathbf{B}$ we assume that $\ssdeps{S}$ includes at least a dependency 
+We assume that  $\ssdeps{S}$ is fixed for each service and known in advance. Note that the dependency set $\ssdeps{S}$ does not contain duplicates, meaning that a service may depend at most once on any specific interface type in a given context. 
+%If $\ssdeps{S} = \emptyset$, then $S$ is a \textit{basic} service (i.e. $S\in\mathbf{B}$) that do not need to be connected to other services to carry out its function. On the other hand, for each $S\in\mathbf{S}\setminus\mathbf{B}$ 
+We assume that $\ssdeps{S}$ always includes two dependencies 
 $d_1=comp$ 
-and a dependency 
-$d_2=comm$: in this way we model the fact that each non basic service needs at least to be bound to a computing and a communication service, for its internal operations and for its interactions with other services. 
+and 
+$d_2=comm$: in this way we model the fact that 
+$S$
+%each non basic service 
+needs at least to be bound to a computing and a communication service, for its internal operations and for its interactions with other services. 
 For each $d\in\ssdeps{S}$ we assume that it is known (e.g. through a locally performed monitoring activity) a value
  $\mu_{S,d}$, which represents the average number of times service $S$ requires dependency $d$ to fulfill each request it has received. 
 %
 %\mauro{Non dovrebbe essere il contrario? $S.Prov <-> S.Req$}
 
 \item $S.Prov \subseteq \mathbf{S}$ is the set of \textit{Providers} of $S$, i.e. the set of services to which  $S$ is bound   to resolve  its dependencies. 
-For services $S\in\mathbf{S}\setminus\mathbf{B}$, 
+%For services $S\in\mathbf{S}\setminus\mathbf{B}$, 
 %we denote by $res(S,d)\in S.Prov$ the service, if it exists, to which $S$ is currently bound to resolve its dependency $d\in\ssdeps{S}$.  \vincenzo{vista la definizione di $res()$, forse queste due definizioni successive sono superflue} Moreover, 
-we denote by $comp(S)\in\mathbf{B}$ and $comm(S)\in\mathbf{B}$ the computing and communication services used to resolve dependencies $comp\in\ssdeps{S}$ and $comm\in\ssdeps{S}$, respectively. It must obviously hold $node(comp(S))=node(comm(S))$ for any $S\in\mathbf{S}\setminus\mathbf{B}$.
+We denote by $comp(S)\in\mathbf{B}$ and $comm(S)\in\mathbf{B}$ the computing and communication services used to resolve dependencies $comp\in\ssdeps{S}$ and $comm\in\ssdeps{S}$, respectively. It must obviously hold $node(comp(S))=node(comm(S))$.
+%for any $S\in\mathbf{S}\setminus\mathbf{B}$.
 %\mauro{Alternativa: Outgoing Bindings}
 
 \item $S.Req \subseteq \mathbf{S}$ is the set of \textit{Requesters} of $S$, i.e. is the set of other services that are bound to $S$  to resolve one of their dependencies. 
@@ -75,22 +95,31 @@ we denote by $comp(S)\in\mathbf{B}$ and $comm(S)\in\mathbf{B}$ the computing and
 
 \end{itemize}
 
-A service is either {\em fully resolved} or {\em partially resolved}. A service $S$ is \emph{fully resolved} if either: ($i$) $S$ has no dependencies (i.e., $S\in\mathbf{B}$); or ($ii$) for all $d \in \ssdeps{S}$ there exists a fully resolved service $S' \in S.Prov$ such that 
+A service  is either {\em fully resolved} or {\em partially resolved}. Basic services in the set $\mathbf{B}$ are fully resolved by definition. A service $S\in\mathbf{S}$ is \emph{fully resolved} if 
+%either: ($i$) $S$ has no dependencies (i.e., $S\in\mathbf{B}$); or ($ii$) 
+for all $d \in \ssdeps{S}$ there exists a fully resolved service $S' \in S.Prov$ such that 
 $match(d,\sstype{S'})>0$. 
 %$\land$ $node(comp(S))=node(comm(S))$ (i.e., the computing and communication services resolving the $comp$ and $comm$ dependencies of $S$ are colocated on the same node). 
 %
 %\mirko{$node(comp(S))=node(comm(S))$ mettere questo come constraint per alleggerire notazione di fully resolved?}
 
-On the other hand, a \emph{partially resolved} service $S$ has a non-empty list of dependencies, and at least one dependency is either not matched, or is matched by a partially resolved service. 
+On the other hand, a \emph{partially resolved} service $S\in\mathbf{S}$ has 
+%a non-empty list of dependencies, and 
+at least one dependency 
+that
+is either not matched, or is matched by a partially resolved service. 
 
-\vincenzo{spero di non aver sbagliato con il senso delle frecce e Prov e Req :-)  ; controllare} A \textit{service assembly} $\mathbf{A}$ is a directed graph $\mathbf{A} = (\mathbf{S}, \mathbf{E})$, where $\mathbf{E} \subseteq \mathbf{S} \times \mathbf{S}$ is the set of resolved dependencies. Specifically, a directed edge $(S_i, S_j) \in \mathbf{E}$ denotes that $S_i$ is using $S_j$ to resolve one of its dependencies. In general, a given $S_i$ has multiple simultaneous outgoing bindings (towards services in $S_i.Prov$), one for each dependency, and can have multiple simultaneous incoming bindings  from other services (belonging to  $S_i.Req$), using $S_i$ to resolve one of their dependencies.
+%\vincenzo{spero di non aver sbagliato con il senso delle frecce e Prov e Req :-)  ; controllare} 
+Finally, a \textit{service assembly} $\mathbf{A}$ is a directed graph $\mathbf{A} = (\mathbf{S}, \mathbf{E})$, where $\mathbf{E} \subseteq \mathbf{S} \times \mathbf{S}$ is the set of resolved dependencies. Specifically, a directed edge $(S_i, S_j) \in \mathbf{E}$ denotes that $S_i$ is using $S_j$ to resolve one of its dependencies. In general, a given $S_i$ has multiple simultaneous outgoing bindings (towards services in $S_i.Prov$), one for each dependency, and can have multiple simultaneous incoming bindings  from other services (belonging to  $S_i.Req$), using $S_i$ to resolve one of their dependencies.
+
+.... commento esemplificativo su figura \ref{fig:serv-assembly} ....
  
 
 %Finally, we point out that our model adheres to the {\em Service Statelessness} design principle~\cite{Erl:2005}, and services do not maintain the interaction state between service invocations -- i.e., each request is served in complete isolation, without relying on information from previous requests. Hence, we assume that the state of a given interaction $(S_i, S_j) \in \mathbf{E}$ between  $S_i$ (i.e., the consumer) and $S_j$ is kept by $S_i$, and requests include all information necessary for their processing. Service statelessness enhances ($i$) decoupling of interacting services, ($ii$) flexibility of the model, since it allows for easily rearranging the assembly at runtime and, ($iii$) scalability, by exploiting service caching and replication.
 
 
 
-According to this model, the problem introduced above can be restated as:\vincenzo{da rivedere}
+According to this model, the problem introduced above can be restated as:\vincenzo{da rivedere; ma serve fare questo restating?}
 \begin{framed} 
 \textit{how to dynamically build and maintain over time a fully resolved assembly of distributed services that are \textcolor{blue}{ able to collectively fulfill}  functional, QoS and energy requirements in case of openness, variability, unpredictability and scalability of the execution environment.}
 \end{framed}

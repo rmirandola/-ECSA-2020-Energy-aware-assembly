@@ -1,11 +1,9 @@
 \section{System Architecture}
 \label{sec:architecture}
 
-The goal is to drive the service-oriented system we are considering towards the construction of a service assembly that is energy efficient (see in Section~\ref{sec:welfareIndex}). In this section we present a fully decentralized architecture allowing for achieving this goal. 
+\vincenzo{da mettere da qualche parte: .... We are assuming that each service $S$ advertises its QoS by publishing the current value  of the QoS index $S.Q$, known through an internal monitoring activity, as described $where???$. Moreover, $S$ could also advertise (see later ....) its system-wide energy consumption by publishing the current values of $S.E^{comp}$ and $S.E_n^{comm}$, $n\in\mathbf{N}$, estimated according to equations (\ref{eq:comp-profile}) and (\ref{eq:comm-profile}), respectively. ... }
 
-
-
-
+The goal is to drive the service-oriented system towards the construction of an energy-efficiency service assembly (see in Section~\ref{sec:welfareIndex}). In this section we present a fully decentralized architecture allowing for achieving this goal. 
 
 
 \begin{figure}[t]
@@ -15,20 +13,67 @@ The goal is to drive the service-oriented system we are considering towards the 
 \label{fig:nodeArch}
 \end{figure}
 
-Figure~\ref{fig:nodeArch} shows the set of macrocomponents deployed at each $Node_i$: \textit{Service Pool} is the set of services $S \in \mathbf{S}$ running on $Node_i$; \textit{Monitor} is in charge of monitoring energy consumption (i.e., $S.X^{comp}$ and $S.X^{comm}$ ) for every service $S$ in the Service Pool; \textit{Assembly Manager}   
+Figure~\ref{fig:nodeArch} shows the set of components deployed at each $Node_i$: \textit{Service Pool} is the set of services $S \in \mathbf{S}$ running on $Node_i$. \textit{Monitor} is in charge of monitoring the energy consumption (i.e., $S.X^{comp}$ and $S.X^{comm}$ ) for each service $S$ in the Service Pool, and notifying detected changes to the \textit{Assembly Manager}.
 
-%, namely
-%\textit{Dissemination}, \textit{Assembly Manager}, and 
+%
+\textit{Assembly Manager} receives information about the energy consumption of local and remote services from \textit{Monitor} and \textit{Dissemination}, respectively, which are used to build the assembly. In particular, it receives from \textit{Dissemination} the set $S.Prov$ that specifies which services should currently be used to solve the dependencies of a local service $S$, and manages the corresponding bindings. Moreover, it receives notifications of incoming binding requests for each local service $S$, and keeps updated the corresponding set $S.Req$. 
+
+Finally, \textit{Dissemination} implements decentralized information dissemination by exploiting a gossip communication model~\cite{shah2009gossip}, which includes two concurrent threads, namely \textit{ActiveThread} and \textit{PassiveThread} (See Algorithm~\ref{alg:gossip}).
+
+ %an active thread that sends a message to a set of peers, and a passive thread that responds to messages received from other peers.
+   
+\textit{ActiveThread} sends, every $\Delta t$ time units, a Gossip
+message to its {\em peer set}\footnote{The peer set is provided by the underlying gossip communication protocol~\cite{shah2009gossip}.}. The message payload is a set of services, containing the list of currently bound dependencies $S.Prov$ plus $S$ itself.
+
+\textit{PassiveThread} listens for messages coming from other peers. Upon receiving a message containing the set $\mathbf{M}$, it checks all services
+$S_k \in \mathbf{M}$ to see whether some of them can be used to fill local services dependencies. If $\sstype{S_k}$ is required as a dependency, then $S_k$ is considered as a candidate to be added to $\mathit{Best}_{S,d}$
+(line~\ref{line:is-depBIS}). The decision whether to include $S_k$ in
+$\mathit{Best}_{S,d}$ is taken by function \textsc{Update}()
+(line~\ref{line:updateBIS}), possibly dropping from $\mathit{Best}_{S,d}$ some
+other service whose utility is worse than $S_k$. The update of the sets
+$\mathit{Best}_{S,d}$ can lead to a substitution of the service currently used
+to solve dependency $d$ (as specified in the set $S.Prov$) with a new
+``better'' service taken from $\mathit{Best}_{S,d}$. The decision about this
+possible substitution is taken by function $\textsc{Select}()$
+(line~\ref{line:selectBIS}), implemented following one of the selection criterion described in Section~\ref{sec:service-select}. 
+
+As is typical with gossip-based protocols, a new instance of
+Algorithm~\ref{alg:gossip} is created at each node for each service $S \in \mathbf{S \ B}$ in deployed in the Service Pool.
 
 
- hosts as set of offered services (i.e., , plus an instance of these macrocomponents.
 
-%Overall, these pairs, by cooperating among them as outlined below and
-%detailed in Section~\ref{subsec:algorithm}, give rise to a fully decentralised
-%implementation of the \gmw{} operations. In particular, the {\em Assembly
-%Management} macrocomponents cooperate according to a gossip schema that allows
-%fully decentralised information dissemination and decision-making about the
-%assembly construction and maintenance. This makes the system robust and
-%scalable in the presence of events like arrival of new requirements,
-%upgrade/downgrade of service utility (including the extreme case of service
-%failure), or arrival/departure of new peers (and corresponding hosted services).
+\begin{algorithm}[t]
+\caption{Algorithm executed by the agent responsible for service $S$}\label{alg:gossip}
+\begin{small}
+\begin{algorithmic}[1]
+\Statex \emph{// Input parameters}
+\State $S; \textsc{Select}(); \textsc{Update}()$
+\Statex \emph{// Local variables}
+%\State $i \leftarrow \textsc{GetProcID}()$\label{line:init-startBIS}
+\State $S.Prov \leftarrow \emptyset$\label{line:init-startBIS}
+\State $\mathit{Best}_{S,d} \leftarrow \emptyset;\ \mbox{for all}\ d \in S.Deps$\label{line:init-endBIS}
+\Statex
+\Procedure{ActiveThread}{}
+\Loop
+\State Wait $\Delta t$
+\ForAll{$S_j \in \textsc{GetPeers}()$}
+\State Send $\langle S.Prov \cup \{S\} \rangle$ to $S_j$\label{line:active-send}
+\EndFor
+\EndLoop
+\EndProcedure
+\Statex
+\Procedure{PassiveThread}{}
+\Loop
+\State Wait for message $\langle \mathbf{M} \rangle$ from $S_j$
+\ForAll{$S_k \in \mathbf{M}$}
+
+\If{there exists $d\in S.Deps$ s.t. $matches(d,\sstype{S_k})>0$}\label{line:is-depBIS}
+\State $\mathit{Best}_{S,d}  \leftarrow \textsc{Update}(\mathit{Best}_{S,d}, S_k)$\label{line:updateBIS}
+\State $S.Prov \leftarrow  \textsc{Select}(\mathit{Best}_{S,d}, S.Prov)$\label{line:selectBIS}
+\EndIf
+\EndFor
+\EndLoop
+\EndProcedure
+\end{algorithmic}
+\end{small}
+\end{algorithm}

@@ -1,64 +1,38 @@
 
-%The \textit{energy(power?) profile} of a service $S$ consists of the following items:
-%\vincenzo{questa parte ora stata portata nell'energy model}
+
+
+%\vincenzo{Commenti generali sui criteri di selezione QoS-aware e energy-aware riportati nel seguito. Nel caso della selezione QoS-aware, per come e' scritta ora,  e' una "banale" tecnica di selezione greedy; se la QoS non e' load-dependent immagino sia la selezione ottima; se la QoS e' load-dependent, bisogna evidentemente evitare la corsa di tutti verso il servizio che appare attualmente "migliore", e quindi il criterio scritto sopra andrebbe precisato; qui entrano in gioco due fattori (vedi lavoro di Shaerf): 1) come si costruisce una stima di $S_i.Q$, sulla base di osservazioni fatte e/o informazioni ricevute (tra i fattori che entrano in gioco qui: quale peso  dare a informazioni piu' o meno recenti; quale peso  dare a informazioni acquisite direttamente o ricevute da terzi); 2) una volta ottenute le stime di $S_i.Q$, come selezionare $\overline{S}$: qui entra in gioco la questione exploitation vs. exploration. Nel caso della selezione energy-aware, mi sembra che in effetti, nel nostro modello, non c'e' load-dependence: nel nostro modello il mio consumo cresce con il carico che io sottopongo, ma il consumo che vedo io non e' influenzato dai consumi degli altri. Con questo modello, quindi, un criterio greedy direi che e' ottimale, e in effetti i due criteri riportati sotto li qualificherei come greedy: differiscono solo per il tipo di informazione utilizzata (locale, che non necessita di advertisament, e globale, che invece necessita di advertisement (con conseguenti problematiche di trust?)}
+
+In this section we present possible energy-aware service selection criteria to be applied in the implementation of the $\textsc{Select}()$ function in Algorithm \ref{alg:gossip}.
+Given a service $S$ and a set of candidates $\mathit{Best}_{S,d}$, we recall that $\textsc{Select}()$  must select within that set a service  that resolves dependency $d\in\ssdeps{S}$.
+
+
+%We are assuming that each service $S$ advertises its QoS by publishing the current value  of the QoS index $S.Q$, known through an internal monitoring activity, as described $where???$. Moreover, $S$ could also advertise (see later ....) its system-wide energy consumption by publishing the current values of $S.E^{comp}$ and $S.E_n^{comm}$, $n\in\mathbf{N}$, estimated according to equations (\ref{eq:comp-profile}) and (\ref{eq:comm-profile}), respectively.
+
+
+%\subsubsection{QoS-driven selection}
+%A possible QoS-driven criterion to drive the selection could be defined as follows:
+%
 %\begin{itemize}
-%\item the  \textit{overall service energy consumption}:
+%\item select $\overline{S}\in \mathit{Best}_{S,d}$ such that: 
+%
+%\begin{footnotesize}
 %\begin{equation}
-%    E^{comp}_t(S,1)=\sum_{S' \in\ssint{S}} E^{comp}_t(S', \theta_{S,(\sstype{S'},\sscontext{S'})}(1))
+%\overline{S} = \argmax_{S_i\in \mathit{Best}_{S,d}}\{S_i.Q\}
 %\end{equation}
-%it is the overall energy consumption caused by a single invocation of $S$;\footnote{The $\lambda$ parameter is set equal to 1 to model a single invocation}
-%\item the  \textit{local service energy consumption} 
-%\begin{equation}
-%L^{comp}_t(S)=E^{comp}_t(cpu(S), \theta_{S,(CPU,\sscontext{cpu(S)})}(1))
-%\end{equation}
-%where $cpu(S)$ is the service of $CPU$ type to which $S$ is bound (i.e., the node where $S$ is deployed on);  it is the  energy consumption for the node where $S$ is deployed, caused by a single invocation of $S$;
-%\item \textit{energy state} of $cpu(S)$: ... in case of battery-powered node, it could be the current charge state of $cpu(S)$; in case of self-producted green-energy powered node, it could be the current energy balance of $cpu(S)$ (given by the difference between its green-energy production capacity, and the overall energy consumption caused by its current load)
+%\end{footnotesize}
+%
+%%\item ....? ....
 %\end{itemize}
 %
-%... Note that each service can locally build its current energy profile, if it knows the energy profiles of all the services to which it is directly bound to resolve its dependencies.
+%
+%\subsubsection{Energy-driven selection}
 
+%Possible energy-driven criteria to drive the selection could be defined as follows:
 
-%\vincenzo{(vecchio commento) una ipotesi di decentralized  energy-aware service selection: immaginiamo che un servizio $S$ debba selezionare un servizio in un set di candidati  $S_1, S_2, ...$ per risolvere una sua dipendenza $d$; questo set e' stato costruito grazie  a una qualche attivita' di diffusione informazioni (gossiping, ....o altro ...); di  ogni servizio candidato, $S$ conosce il suo  \textit{energy profile}  (questa e' l'informazione che viene fatta circolare); la selezione del servizio con cui fare binding potrebbe essere guidata da vari criteri, p.es.: }
-%\vincenzo{
-%\begin{itemize} 
-%\item minimizzazione del consumo globale: $S$ potrebbe selezionare il servizio in $S_1, S_2, ...$  che ha la minima \textit{overall service energy consumption} (e quindi causa il minimo incremento dell'energia globale consumata in tutto l'assembly);
-%\item minimizzazione del consumo locale: $S$ potrebbe selezionare il servizio in $S_1, S_2, ...$  che causa la minima \textit{local service energy consumption} (nota: se si tiene conto della sola "computing" energy, tutti i candidati sarebbero equivalenti; se pero' introduciamo anche la "communication" energy, allora servizi diversi potrebbero causare consumi locali diversi);
-%\item fairness: $S$ potrebbe selezionare il servizio che rende minima la distanza tra il migliore e peggiore \textit{energy balance} di $node(S_1), node(S_2), ...)$ (questo criterio cerca di distribuire piu' equamente il carico energetico);
-%\item ... altro ...
-%\end{itemize}
-%}
+\begin{description}
 
-
-\vincenzo{Commenti generali sui criteri di selezione QoS-aware e energy-aware riportati nel seguito.
-Nel caso della selezione QoS-aware, per come e' scritta ora,  e' una "banale" tecnica di selezione greedy; se la QoS non e' load-dependent immagino sia la selezione ottima; se la QoS e' load-dependent, bisogna evidentemente evitare la corsa di tutti verso il servizio che appare attualmente "migliore", e quindi il criterio scritto sopra andrebbe precisato; qui entrano in gioco due fattori (vedi lavoro di Shaerf): 1) come si costruisce una stima di $S_i.Q$, sulla base di osservazioni fatte e/o informazioni ricevute (tra i fattori che entrano in gioco qui: quale peso  dare a informazioni piu' o meno recenti; quale peso  dare a informazioni acquisite direttamente o ricevute da terzi); 2) una volta ottenute le stime di $S_i.Q$, come selezionare $\overline{S}$: qui entra in gioco la questione exploitation vs. exploration.
-Nel caso della selezione energy-aware, mi sembra che in effetti, nel nostro modello, non c'e' load-dependence: nel nostro modello il mio consumo cresce con il carico che io sottopongo, ma il consumo che vedo io non e' influenzato dai consumi degli altri. Con questo modello, quindi, un criterio greedy direi che e' ottimale, e in effetti i due criteri riportati sotto li qualificherei come greedy: differiscono solo per il tipo di informazione utilizzata (locale, che non necessita di advertisament, e globale, che invece necessita di advertisement (con conseguenti problematiche di trust?)}
-
-We are assuming that each service $S$ advertises its QoS by publishing the current value  of the QoS index $S.Q$, known through an internal monitoring activity, as described $where???$. Moreover, $S$ could also advertise (see later ....) its system-wide energy consumption by publishing the current values of $S.E^{comp}$ and $S.E_n^{comm}$, $n\in\mathbf{N}$, estimated according to equations (\ref{eq:comp-profile}) and (\ref{eq:comm-profile}), respectively.
-
-Let us assume that $S$ must select a service within a set of candidates $\Omega_{S,d}=\{S_1, S_2, \dots, S_k\}$ to resolve its dependency $d\in\ssdeps{S}$.
-
-\subsubsection{QoS-driven selection}
-A possible QoS-driven criterion to drive the selection could be defined as follows:
-
-\begin{itemize}
-\item select $\overline{S}\in \Omega_{S,d}$ such that: 
-
-\begin{footnotesize}
-\begin{equation}
-\overline{S} = \argmax_{S_i\in \Omega_{S,d}}\{S_i.Q\}
-\end{equation}
-\end{footnotesize}
-
-%\item ....? ....
-\end{itemize}
-
-
-\subsubsection{Energy-driven selection}
-Possible energy-driven criteria to drive the selection could be defined as follows:
-
-\begin{enumerate}
-
-\item select $\overline{S}\in \Omega_{S,d}$ such that:
+\item[ Criterion 1: ]  select $\overline{S}\in \mathit{Best}_{S,d}$ such that:
 
 %\begin{footnotesize}
 %\begin{equation}
@@ -70,16 +44,13 @@ Possible energy-driven criteria to drive the selection could be defined as follo
 \begin{footnotesize}
 \begin{equation}
 \overline{S}=
-\argmin_{S_i\in \Omega_{S,d}}\{S_i.E^{comp} + \mu_{S,\sstype{S_i}} \cdot S_i.E_{node(S)}^{comm}\}
+\argmin_{S'\in \mathit{Best}_{S,d}}\{S'.E^{comp} + \mu_{S,\sstype{S'}} \cdot S'.E_{node(S)}^{comm}\}
 \label{eq:global-selection}
 \end{equation}
 \end{footnotesize}
 
-\noindent
-The use of this criterion implies that each service $S$ advertises the values $S.E^{comp}$ and $S.E_n^{comm}$, $n\in\mathbf{N}$;
-%\vincenzo{forse la somma per gli $E_n^{comm}$ e (sotto) $L_n^{comm}$ andrebbe pesata con il carico $\lambda_S(n)$ che $S$ riceve dal nodo $n$? } 
 
-\item select $\overline{S}\in \Omega_{S,d}$ such that:
+\item[Criterion 2: ]  select $\overline{S}\in \mathit{Best}_{S,d}$ such that:
 
 
 %$\big(S.L^{comp}\big|_{res(S,d)=\overline{S}}+S.L^{comm}\big|_{res(S,d)=\overline{S}}\big)=\min\limits_{S_i\in \Omega_d}\{\big(S.L^{comp}\big|_{res(S,d)=S_i}+S.L^{comm}\big|_{res(S,d)=S_i}\big)\}$, where $res(S,d)$ denotes the service in $S.Prov$ that resolves dependency $d\in\ssdeps{S}$: 
@@ -90,7 +61,7 @@ The use of this criterion implies that each service $S$ advertises the values $S
 \begin{footnotesize}
 \begin{multline}
 \overline{S} = 
-\argmin_{S'\in \Omega_{S,d}}\Big\{
+\argmin_{S'\in \mathit{Best}_{S,d}}\Big\{
  \mu_{S,\sstype{S'}}\cdot S'.L^{comp} \cdot I_{\{node(S')=node(S)\}} \\ 
  + \mu_{S,\sstype{S'}} \cdot \phi_{node(S)}^{prov}(\delta_{S,\sstype{S'}}^{snd}, bw(node(S),node(S')), lt(node(S),node(S')) \cdot I_{\{node(S')\neq node(S)\}} \\ 
  + \mu_{S,\sstype{S'}}\cdot S'.L_{node(S)}^{comm} \cdot I_{\{node(S')=node(S)\}}\Big\}
@@ -98,13 +69,28 @@ The use of this criterion implies that each service $S$ advertises the values $S
 \end{multline}
 \end{footnotesize}
 
-\vincenzo{spiegare i vari termini di questa espressione? fare qualche commento sulla differenza tra questo criterio e il precedente?}
+
+
+\end{description}
+
+\noindent
+\vincenzo{.... introdurre qui commenti sui primi due criteri .... quelle sotto sono farsi da considerare a questo scopo ...}
+
+The use of  criterion 1 implies that each service $S$ advertises the values $S.E^{comp}$ and $S.E_n^{comm}$, $n\in\mathbf{N}$;
+%\vincenzo{forse la somma per gli $E_n^{comm}$ e (sotto) $L_n^{comm}$ andrebbe pesata con il carico $\lambda_S(n)$ che $S$ riceve dal nodo $n$? } 
+ 
+\vincenzo{spiegare i vari termini di  espressione per criterio 2? fare qualche commento sulla differenza tra questo criterio e il precedente?}
 
 \noindent
 where $I_{\{cond\}}$ is the indicator function that holds 1 when condition $cond$ is true, and 0 otherwise. The use of this criterion does not require the advertisement of any energy consumption value, as all the information needed for its application can be collected at each node by a local monitoring activity;
 \vincenzo{gli indici $S.L^{comp}$ e $S.L_n^{comm}$ sono basati solo su informazioni locali, quindi in effetti non richiedono che venga fatta circolare nessun tipo di informazione; potrebbe essere interessante vedere che cosa succede agli indici di sistema quando si usa un criterio di selezione basato solo su informazione locale rispetto a uno dove viene fatta circolare informazione (usando  indici come $S.E^{comp}$ e $S.E_n^{comm}$), che e' un po' la discussione che faceva Schaerf nel suo lavoro su RL e load balancing  }
 
-\item select $\overline{S}\in \Omega_{S,d}$ such that:
+
+\vincenzo{.... introdurre qui nuovo criterio basato su learning, motivando  ...; i due criteri sotto vanno unificati, e ridotta la presentazione dell'approccio Shaerf}
+
+\begin{description}
+
+\item[Criterion 3: ] select $\overline{S}\in \Omega_{S,d}$ such that:
 
 \begin{footnotesize}
 \begin{equation}
@@ -142,7 +128,7 @@ The use of this criterion aims at fairly distributing energy consumption among t
 
 
 %%% Learning-based strategy
-\item Learning-based fair strategy:
+\item[Criterion 3bis: ] Learning-based fair strategy:
 
 Each service $S_i$ advertises its overall energy consumption.
 
@@ -190,7 +176,7 @@ Where A[ee(S)] represent the average of the overall values $ee(S_j)$ for each $S
 
 Where $\sigma$ is a normalization factor, $\sum_{S_j in S} \overline{p(S_j)}$\footnote{For a comprehensive discussion on how to setup the parameters $n$, $W$  we refer the interested reader to~\cite{Schaerf:1995} and to our replication package for the actual instantiation in our scenario.}. If a service do not have experiences in the vector $ee(S)$ it selects a service according to the local-rule, Equation~\ref{eq:local-selection}.
 
-\end{enumerate}
+\end{description}
 
 
 %\vincenzo{commenti finali: come si combinano i criteri di selezione QoS-aware e energy-aware? in ogni caso, dato un qualche criterio di selezione, la sua efficacia andrebbe poi valutata vedendo quale impatto ha su misure globali come $GQoS(\mathbf{A})$ e $GEB(\mathbf{A})$, $FQoS(\mathbf{A})$ e $FEB(\mathbf{A})$}
